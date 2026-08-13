@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BEL Field">
+<meta name="theme-color" content="#243329">
+<title>BEL Field Companion</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --charcoal:#243329; --panel-bg:#2E3F34; --panel-mid:#384B3E; --panel-lite:#435948;
+  --border:#4F6855; --clay:#A85A2E; --clay-lite:#C26E3D; --ochre:#BF7435; --ochre-lite:#D48C4A;
+  --cream:#EFE9DC; --cream-dim:#D5CEBD; --cream-muted:#9E9282; --white:#F8F3EA;
+  --danger:#c04040; --info:#4a7ea8; --good:#5b8f5f;
+  --r:10px; --r-lg:16px;
+  --serif:'Cormorant Garamond','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Karla,Helvetica,Arial,sans-serif;
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --tabbar-h:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;overscroll-behavior-y:none;}
+body{
+  background:var(--charcoal); color:var(--cream); font-family:var(--sans);
+  font-size:16px; line-height:1.45; -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;
+}
+button{font-family:inherit;font-size:inherit;color:inherit;border:0;background:none;cursor:pointer;}
+input,select,textarea{font-family:inherit;font-size:16px;color:var(--cream);background:var(--panel-bg);
+  border:1px solid var(--border);border-radius:var(--r);padding:12px;width:100%;}
+input:focus,select,textarea:focus{outline:2px solid var(--ochre);outline-offset:-1px;}
+h1,h2,h3{font-family:var(--serif);font-weight:600;margin:0;letter-spacing:.01em;}
+
+/* ---------- APP SHELL ---------- */
+#app{display:flex;flex-direction:column;height:100dvh;}
+#topbar{
+  flex:0 0 auto;padding:calc(var(--safe-t) + 10px) 16px 10px;
+  background:linear-gradient(180deg,#1d2a21,var(--charcoal));
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;position:relative;z-index:20;
+}
+#topbar .brand{font-family:var(--serif);font-size:1.15rem;color:var(--white);line-height:1.1;flex:1;min-width:0;}
+#topbar .brand small{display:block;font-family:var(--sans);font-size:.66rem;color:var(--cream-muted);
+  letter-spacing:.12em;text-transform:uppercase;margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#clock{font-variant-numeric:tabular-nums;font-size:1.35rem;color:var(--ochre-lite);font-weight:600;letter-spacing:-.01em;}
+.icon-btn{width:42px;height:42px;border-radius:var(--r);display:grid;place-items:center;
+  background:var(--panel-bg);border:1px solid var(--border);font-size:1.1rem;flex:0 0 auto;}
+.icon-btn:active{background:var(--panel-lite);}
+
+#main{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:14px 14px calc(var(--tabbar-h) + var(--safe-b) + 24px);}
+
+#tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  display:grid;grid-template-columns:repeat(5,1fr);
+  background:rgba(29,42,33,.97);backdrop-filter:blur(14px);
+  border-top:1px solid var(--border);padding-bottom:var(--safe-b);
+}
+.tabbtn{height:var(--tabbar-h);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;color:var(--cream-muted);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;}
+.tabbtn .ic{font-size:1.3rem;line-height:1;}
+.tabbtn.active{color:var(--ochre-lite);}
+.tabbtn.active .ic{transform:translateY(-1px);}
+.tabbtn .dot{position:absolute;margin:-22px 0 0 22px;width:7px;height:7px;border-radius:50%;background:var(--clay-lite);}
+
+/* ---------- CARDS ---------- */
+.card{background:var(--panel-bg);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:16px;margin-bottom:12px;}
+.card.tight{padding:13px 14px;}
+.sec-label{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cream-muted);
+  margin:22px 2px 9px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.sec-label:first-child{margin-top:4px;}
+.muted{color:var(--cream-muted);}
+.dim{color:var(--cream-dim);}
+.sm{font-size:.82rem;}
+.xs{font-size:.72rem;}
+.row{display:flex;align-items:center;gap:10px;}
+.row.wrap{flex-wrap:wrap;}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.stack{display:flex;flex-direction:column;gap:10px;}
+.grow{flex:1;min-width:0;}
+.trunc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ---------- NOW CARD ---------- */
+#nowcard{background:linear-gradient(155deg,#3b4f40,#2b3a30 55%,#26332a);
+  border:1px solid var(--ochre);border-radius:var(--r-lg);padding:20px 18px;position:relative;overflow:hidden;}
+#nowcard::before{content:'';position:absolute;inset:0 auto 0 0;width:5px;background:var(--ochre);}
+#nowcard.late{border-color:var(--clay-lite);}
+#nowcard.late::before{background:var(--clay-lite);}
+#nowcard.idle{border-color:var(--border);}
+#nowcard.idle::before{background:var(--border);}
+.now-kicker{font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ochre-lite);
+  display:flex;align-items:center;gap:7px;}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--ochre-lite);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+.now-title{font-family:var(--serif);font-size:1.75rem;line-height:1.15;color:var(--white);margin:9px 0 6px;}
+.now-meta{font-size:.87rem;color:var(--cream-dim);}
+.now-time{font-variant-numeric:tabular-nums;font-size:1.05rem;color:var(--cream);margin-top:10px;}
+.countdown{font-variant-numeric:tabular-nums;font-size:2.5rem;font-weight:300;color:var(--ochre-lite);
+  letter-spacing:-.02em;line-height:1;margin-top:12px;}
+.countdown.over{color:var(--clay-lite);}
+.countdown small{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-muted);
+  display:block;font-weight:400;margin-top:6px;}
+#progressbar{height:5px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden;margin-top:14px;}
+#progressbar i{display:block;height:100%;background:var(--ochre);transition:width .5s;}
+
+/* ---------- BUTTONS ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:48px;padding:0 16px;
+  border-radius:var(--r);background:var(--panel-mid);border:1px solid var(--border);color:var(--cream);
+  font-size:.9rem;font-weight:500;transition:.12s;}
+.btn:active{transform:scale(.975);background:var(--panel-lite);}
+.btn.primary{background:var(--clay);border-color:var(--clay-lite);color:var(--white);}
+.btn.ochre{background:var(--ochre);border-color:var(--ochre-lite);color:#231a10;font-weight:600;}
+.btn.ghost{background:transparent;}
+.btn.danger{background:transparent;border-color:var(--danger);color:#e08a8a;}
+.btn.good{background:var(--good);border-color:#6fa873;color:var(--white);}
+.btn.full{width:100%;}
+.btn.sm{min-height:44px;padding:0 13px;font-size:.8rem;}
+.btn.on{background:var(--good);border-color:#6fa873;color:var(--white);}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px;}
+.btnrow.three{grid-template-columns:1fr 1fr 1fr;}
+
+/* ---------- TIMELINE ---------- */
+.tl{position:relative;padding-left:20px;}
+.tl::before{content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--border);}
+.tlitem{position:relative;margin-bottom:10px;}
+.tlitem::before{content:'';position:absolute;left:-19px;top:20px;width:12px;height:12px;border-radius:50%;
+  background:var(--panel-bg);border:2px solid var(--border);}
+.tlitem.done::before{background:var(--good);border-color:var(--good);}
+.tlitem.now::before{background:var(--ochre);border-color:var(--ochre);box-shadow:0 0 0 5px rgba(191,116,53,.22);}
+.tlitem.done .card{opacity:.55;}
+.tlitem.now .card{border-color:var(--ochre);background:var(--panel-mid);}
+.timecol{font-variant-numeric:tabular-nums;font-size:.95rem;color:var(--ochre-lite);font-weight:600;
+  min-width:58px;flex:0 0 auto;}
+.timecol small{display:block;font-size:.66rem;color:var(--cream-muted);font-weight:400;}
+.seg-title{font-family:var(--serif);font-size:1.2rem;color:var(--white);line-height:1.2;}
+.done .seg-title{text-decoration:line-through;text-decoration-color:var(--cream-muted);}
+
+/* ---------- CHIPS / PILLS ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:.66rem;letter-spacing:.09em;
+  text-transform:uppercase;padding:4px 9px;border-radius:99px;border:1px solid var(--border);
+  background:var(--panel-mid);color:var(--cream-dim);white-space:nowrap;}
+.chip.speaking{background:rgba(191,116,53,.2);border-color:var(--ochre);color:var(--ochre-lite);}
+.chip.travel{background:rgba(74,126,168,.18);border-color:#4a7ea8;color:#8bb8d8;}
+.chip.interview{background:rgba(168,90,46,.22);border-color:var(--clay-lite);color:#e0a077;}
+.chip.site{background:rgba(91,143,95,.2);border-color:var(--good);color:#96c79a;}
+.chip.meal{background:rgba(213,206,189,.1);color:var(--cream-dim);}
+.chip.free{background:transparent;}
+.chip.ok{background:rgba(91,143,95,.22);border-color:var(--good);color:#9fd0a3;}
+.chip.warn{background:rgba(191,116,53,.2);border-color:var(--ochre);color:var(--ochre-lite);}
+.chip.bad{background:rgba(192,64,64,.18);border-color:var(--danger);color:#e69a9a;}
+
+/* ---------- SEGMENTED CONTROL ---------- */
+.segctl{display:flex;background:var(--panel-bg);border:1px solid var(--border);border-radius:var(--r);
+  padding:3px;gap:3px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.segctl button{flex:1 0 auto;min-height:46px;padding:0 14px;border-radius:7px;font-size:.82rem;
+  color:var(--cream-muted);white-space:nowrap;}
+.segctl button.active{background:var(--panel-lite);color:var(--white);font-weight:600;}
+
+/* ---------- CONSENT GRID ---------- */
+.consent{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.ctog{display:flex;align-items:center;gap:8px;padding:11px 12px;border-radius:var(--r);
+  background:var(--panel-mid);border:1px solid var(--border);font-size:.78rem;text-align:left;line-height:1.2;}
+.ctog .box{width:20px;height:20px;flex:0 0 auto;border-radius:5px;border:2px solid var(--cream-muted);
+  display:grid;place-items:center;font-size:.75rem;color:transparent;}
+.ctog.on{background:rgba(91,143,95,.2);border-color:var(--good);color:var(--white);}
+.ctog.on .box{background:var(--good);border-color:var(--good);color:var(--white);}
+
+/* ---------- RECORDER ---------- */
+.rec{display:flex;align-items:center;gap:14px;padding:14px;border-radius:var(--r);
+  background:var(--moss,#1F1812);border:1px solid var(--border);margin-top:12px;}
+.rec.live{border-color:var(--danger);background:rgba(192,64,64,.12);}
+.rec .rt{font-variant-numeric:tabular-nums;font-size:1.7rem;font-weight:300;letter-spacing:-.02em;flex:1;}
+.rec.live .rt{color:#ef9d9d;}
+.recdot{width:11px;height:11px;border-radius:50%;background:var(--cream-muted);}
+.rec.live .recdot{background:var(--danger);animation:pulse 1.2s infinite;}
+
+/* ---------- MISC ---------- */
+.divider{height:1px;background:var(--border);margin:14px -16px;}
+.kv{display:flex;gap:10px;font-size:.85rem;padding:7px 0;border-bottom:1px solid rgba(79,104,85,.4);
+  width:100%;text-align:left;line-height:1.45;}
+.kv:last-child{border-bottom:0;}
+.kv b{flex:0 0 92px;font-weight:500;color:var(--cream-muted);font-size:.75rem;
+  letter-spacing:.06em;text-transform:uppercase;padding-top:2px;}
+
+/* ---------- TAPPABILITY ----------
+   Anything that opens something else gets the same affordance:
+   a chevron, an ochre value, and a visible press state. If it
+   looks like this, it does something when you touch it. */
+.kv.tap{min-height:46px;align-items:center;padding:9px 0;}
+.kv.tap .grow{color:var(--ochre-lite);}
+.kv.tap::after{content:'›';color:var(--cream-muted);font-size:1.3rem;line-height:1;
+  flex:0 0 auto;padding-left:4px;}
+.kv.tap:active{background:var(--panel-lite);border-radius:6px;
+  box-shadow:0 0 0 8px var(--panel-lite);}
+.card.tap:active,.tlitem .card:active,.q:active{background:var(--panel-lite);}
+.card.tap{position:relative;}
+.chip.tap:active{background:var(--panel-lite);}
+.tapnote{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-muted);
+  display:flex;align-items:center;gap:5px;margin-top:2px;}
+.linkrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.linkrow .btn{flex:1 1 auto;min-width:132px;}
+.empty{text-align:center;padding:48px 20px;color:var(--cream-muted);}
+.empty .big{font-size:2.6rem;opacity:.5;margin-bottom:10px;}
+a.link{color:var(--ochre-lite);text-decoration:none;border-bottom:1px solid rgba(212,140,74,.4);}
+.notefield{min-height:76px;resize:vertical;margin-top:10px;font-size:15px;}
+
+/* ---------- QUESTION GUIDE ---------- */
+.qhead{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin:14px -16px 0;padding:12px 16px 10px;border-top:1px solid var(--border);}
+.qhead .lbl{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cream-muted);}
+.qcount{font-variant-numeric:tabular-nums;font-size:.72rem;color:var(--ochre-lite);white-space:nowrap;}
+.qcount.done{color:#9fd0a3;}
+.qwrap{display:flex;flex-direction:column;gap:8px;}
+.q{display:flex;gap:11px;align-items:flex-start;text-align:left;width:100%;
+  padding:13px 14px;border-radius:var(--r);background:var(--panel-mid);
+  border:1px solid var(--border);border-left:3px solid var(--ochre);line-height:1.45;}
+.q:active{background:var(--panel-lite);}
+.q .qbox{width:22px;height:22px;flex:0 0 auto;margin-top:1px;border-radius:6px;
+  border:2px solid var(--cream-muted);display:grid;place-items:center;font-size:.8rem;color:transparent;}
+.q .qlabel{display:block;font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ochre-lite);margin-bottom:5px;}
+.q .qtext{display:block;font-size:.95rem;color:var(--white);}
+.q.asked{border-left-color:var(--good);background:var(--panel-bg);}
+.q.asked .qbox{background:var(--good);border-color:var(--good);color:var(--white);}
+.q.asked .qtext{color:var(--cream-muted);}
+.q.asked .qlabel{color:var(--cream-muted);}
+.qsub{margin:8px 0 0 33px;padding-left:12px;border-left:1px solid var(--border);
+  display:flex;flex-direction:column;gap:7px;}
+.qsub div{font-size:.85rem;color:var(--cream-dim);line-height:1.4;}
+.qsub div::before{content:'↳ ';color:var(--cream-muted);}
+.qfocus{font-size:.85rem;color:var(--ochre-lite);margin-top:9px;line-height:1.4;}
+.qnone{font-size:.85rem;color:#e0a077;padding:12px 14px;border-radius:var(--r);
+  background:rgba(168,90,46,.14);border:1px solid var(--clay-lite);line-height:1.45;}
+.qsrc{font-size:.72rem;color:var(--cream-muted);line-height:1.5;padding:11px 13px;
+  background:var(--panel-mid);border-radius:var(--r);margin-bottom:12px;}
+.qgroup{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ochre-lite);
+  margin:18px 0 8px;}
+
+/* ---------- SHEET (modal) ---------- */
+#scrim{position:fixed;inset:0;background:rgba(10,16,12,.72);z-index:40;opacity:0;pointer-events:none;
+  transition:.22s;backdrop-filter:blur(3px);}
+#scrim.open{opacity:1;pointer-events:auto;}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--panel-bg);
+  border-top:1px solid var(--ochre);border-radius:20px 20px 0 0;
+  max-height:88dvh;overflow-y:auto;transform:translateY(102%);transition:transform .26s cubic-bezier(.32,.72,0,1);
+  padding:8px 16px calc(24px + var(--safe-b));-webkit-overflow-scrolling:touch;}
+#sheet.open{transform:translateY(0);}
+.grabber{width:38px;height:4px;border-radius:2px;background:var(--border);margin:6px auto 14px;}
+
+#toast{position:fixed;left:50%;transform:translateX(-50%) translateY(-16px);z-index:60;
+  bottom:calc(var(--tabbar-h) + var(--safe-b) + 16px);background:var(--panel-lite);
+  border:1px solid var(--ochre);color:var(--white);padding:12px 20px;border-radius:99px;
+  font-size:.86rem;opacity:0;pointer-events:none;transition:.2s;box-shadow:0 6px 26px rgba(0,0,0,.5);
+  max-width:88vw;text-align:center;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ---------- TABLET / LANDSCAPE ---------- */
+@media (min-width:760px){
+  #main{padding:20px 24px calc(var(--tabbar-h) + var(--safe-b) + 28px);max-width:1100px;margin:0 auto;width:100%;}
+  .now-title{font-size:2.2rem;}
+  .countdown{font-size:3.2rem;}
+  .consent{grid-template-columns:repeat(4,1fr);}
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;}
+  .cols2 .card{margin-bottom:0;}
+  #tabbar{grid-template-columns:repeat(5,minmax(0,190px));justify-content:center;}
+}
+@media print{#tabbar,#topbar{display:none;}body{background:#fff;color:#000;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <button class="icon-btn" onclick="openMenu()" aria-label="Menu">☰</button>
+    <div class="brand"><span id="fs-name">Field Companion</span><small id="fs-sub">Black Ecologies Lab</small></div>
+    <div id="clock">--:--</div>
+  </header>
+  <main id="main"></main>
+  <nav id="tabbar">
+    <button class="tabbtn active" data-view="now"   onclick="go('now')"><span class="ic">◉</span>Now</button>
+    <button class="tabbtn" data-view="day"   onclick="go('day')"><span class="ic">≡</span>Day</button>
+    <button class="tabbtn" data-view="show"  onclick="go('show')"><span class="ic">◈</span>Run</button>
+    <button class="tabbtn" data-view="oral"  onclick="go('oral')"><span class="ic">◍</span>Oral</button>
+    <button class="tabbtn" data-view="place" onclick="go('place')"><span class="ic">⌖</span>Places</button>
+  </nav>
+</div>
+<div id="scrim" onclick="closeSheet()"></div>
+<div id="sheet"><div class="grabber"></div><div id="sheet-body"></div></div>
+<div id="toast"></div>
+<script>
+/* ============================================================
+   BEL FIELD COMPANION — offline field-day operations console
+   Black Ecologies Lab, Rutgers University
+   Reads the desktop planner's data (bel_platform_v1) and keeps
+   its own field-ops layer (bel_field_ops_v1) so nothing upstream
+   is ever overwritten.
+   ============================================================ */
+/* ---------- CONSTANTS ---------- */
+var PLANNER_KEY = 'bel_platform_v1';
+var OPS_KEY     = 'bel_field_ops_v1';
+
+/* Mississippi 2026 itinerary, encoded from "Final-ish Field School Itinerary" */
+var MS2026 = {"version":1,"schoolId":"ms2026","schoolTitle":"Black Ecologies Field School — Mississippi 2026","destination":"Mississippi & New Orleans · Aug 15–22","dateStart":"2026-08-15","days":[{"date":"2026-08-15","label":"Day 1 · Jackson"},{"date":"2026-08-16","label":"Day 2 · New Orleans"},{"date":"2026-08-17","label":"Day 3 · Hattiesburg"},{"date":"2026-08-18","label":"Day 4 · Mayersville"},{"date":"2026-08-19","label":"Day 5 · Clarksdale & Mound Bayou"},{"date":"2026-08-20","label":"Day 6 · Winona & Graball"},{"date":"2026-08-21","label":"Day 7 · Holly Springs & Oxford"},{"date":"2026-08-22","label":"Day 8 · Return"}],"segments":[{"id":"s01","dayIdx":0,"start":"14:30","end":"15:00","type":"site","title":"Airport pickups — Medgar Evers Airport, Jackson","speaker":"Lead driver: Teona","speakerBio":"","intro":"","av":"First footage opportunity of the school. Arrivals footage is hard to re-stage — have a camera out at baggage claim.","locationId":"loc_jan","personId":null,"notes":"STATED: 2:30 PM. Airport is named for Medgar Evers, assassinated in Jackson in 1963 — worth naming on the ride out. Confirm all inbound flight numbers and build in slack for delays.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s02","dayIdx":0,"start":"15:00","end":"16:35","type":"travel","title":"Transit — Jackson to Hattiesburg","speaker":"Lead driver: Teona","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ CONFLICT: the itinerary shows 2:30 PM pickup and 3:00 PM arrival at TruCulture, but Jackson to Hattiesburg is ~90 miles / 1h35 on US-49. The 3:00 PM arrival is not achievable. Either the pickup is much earlier or the arrival is ~4:35 PM. FLAGGED FOR YOU TO RESOLVE. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Jackson–Medgar Wiley Evers Intl Airport","to":"TruCulture Farm, Hattiesburg","mode":"Van","buffer":20},{"id":"s03","dayIdx":0,"start":"16:35","end":"17:30","type":"site","title":"TruCulture Farm arrival & settle in","speaker":"Bailey Hutchison","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":"per_bailey","notes":"Adjusted from the stated 3:00 PM to follow the real drive time. See the transit block for the conflict.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s04","dayIdx":0,"start":"17:30","end":"19:00","type":"speaking","title":"Opening circle","speaker":"Field school team","speakerBio":"","intro":"This is the framing moment for the whole week — the Blues Epistemology, the four threads, and the invitation to move with deep listening, humility and presence.","av":"Circle format is hard to mic. Use a recorder in the centre plus a roaming handheld. Ask consent before recording participants, not just guides.","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Opening circle, mixer and welcome dinner are listed together at 3:00 PM with no end time.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s05","dayIdx":0,"start":"19:00","end":"21:00","type":"meal","title":"Mixer & welcome dinner","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Collect dietary restrictions in advance.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s06","dayIdx":1,"start":"08:00","end":"08:45","type":"meal","title":"Breakfast","speaker":"Lead drivers: J.T. and Bailey","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"STATED: 8:00 AM breakfast and leave for New Orleans.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s07","dayIdx":1,"start":"08:45","end":"10:50","type":"travel","title":"Transit — Hattiesburg to New Orleans","speaker":"Lead drivers: J.T. and Bailey","speakerBio":"","intro":"","av":"","locationId":"loc_ccfm","personId":null,"notes":"117 miles, ~2h03 via I-59 south. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver. Verified distance: 111 road miles.","status":"pending","actualStart":null,"actualEnd":null,"from":"TruCulture Farm, Hattiesburg","to":"Crescent City Farmers Market, New Orleans","mode":"Van","buffer":20},{"id":"s08","dayIdx":1,"start":"11:00","end":"13:00","type":"site","title":"TruCulture Community Market tour & lunch — Crescent City Farmers Market","speaker":"Bailey Hutchison","speakerBio":"","intro":"","av":"Market ambience is good sound. Ask vendors before filming their stalls.","locationId":"loc_ccfm","personId":"per_bailey","notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Listed only as \"Midday.\" CONFIRM the Sunday market is running 8/16 and that TruCulture has a stall.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s09","dayIdx":1,"start":"13:00","end":"13:30","type":"travel","title":"Transit — market to Bayou Road","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_bayou","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Crescent City Farmers Market","to":"Bayou Road corridor","mode":"Van","buffer":10},{"id":"s10","dayIdx":1,"start":"13:30","end":"15:00","type":"site","title":"Bayou Road & Community Book Center","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_bayou","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Listed only as \"Afternoon.\" Historic Black commercial corridor.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s11","dayIdx":1,"start":"15:00","end":"16:45","type":"site","title":"Ashé Cultural Arts Center","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_ashe","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Listed only as \"Afternoon.\" Confirm a contact at Ashé and whether filming is permitted.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s12","dayIdx":1,"start":"17:00","end":"19:05","type":"travel","title":"Return transit — New Orleans to Hattiesburg","speaker":"Lead drivers: J.T. and Bailey","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. No return time is given in the itinerary. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"New Orleans, LA","to":"TruCulture Farm, Hattiesburg","mode":"Van","buffer":20},{"id":"s13","dayIdx":1,"start":"19:05","end":"20:00","type":"meal","title":"Dinner","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s14","dayIdx":1,"start":"20:00","end":"21:30","type":"free","title":"Quiet evening — journal completion","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Listed as \"Evening · quiet evening to complete our journals.\" Protect this — it is the only unstructured block in the first three days.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s15","dayIdx":2,"start":"08:00","end":"10:00","type":"site","title":"Movement, breathwork & foraging workshop","speaker":"Bailey Hutchison","speakerBio":"","intro":"","av":"Foraging walk moves — handheld and a wireless on Bailey. Morning light is the best of the day here.","locationId":"loc_truculture","personId":"per_bailey","notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Listed only as \"Morning.\"","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s16","dayIdx":2,"start":"10:00","end":"12:00","type":"site","title":"Hands in the land — Afro-Indigenous farm tour","speaker":"Bailey Hutchison","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":"per_bailey","notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Listed as \"Midday · Hands in the land, field note session & Afro-Indigenous farm tour.\"","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s17","dayIdx":2,"start":"12:00","end":"13:00","type":"meal","title":"Lunch & field note session","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s18","dayIdx":2,"start":"13:30","end":"14:45","type":"interview","title":"Land story interview — Bailey Hutchison","speaker":"","speakerBio":"","intro":"","av":"75 minutes, the only interview with a stated duration. Outdoor farm: wind screen essential, record 30s room tone, watch for tractor and livestock. Backup recorder running.","locationId":"loc_truculture","personId":"per_bailey","notes":"STATED: 1:30 PM, 75 minutes. Confirm written release BEFORE rolling. Topics: Afro-Indigenous ethnobotany, three generations of growing, 7th Ward to Hattiesburg.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s19","dayIdx":2,"start":"15:00","end":"17:00","type":"free","title":"Open block — rest, notes, B-roll","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Not in the itinerary — inserted to fill the gap between the interview and the evening programme. Good window for site B-roll and card offload.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s20","dayIdx":2,"start":"17:00","end":"18:30","type":"speaking","title":"Writing workshop","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Listed as \"Evening · Writing workshop, fireside circle & outdoor grill dinner.\"","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s21","dayIdx":2,"start":"18:30","end":"20:00","type":"meal","title":"Outdoor grill dinner","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s22","dayIdx":2,"start":"20:00","end":"21:30","type":"speaking","title":"Fireside circle","speaker":"","speakerBio":"","intro":"","av":"Firelight is hard on video and good on audio. Plan for audio-primary.","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s23","dayIdx":3,"start":"07:00","end":"09:00","type":"site","title":"Wrap-up at TruCulture — breakfast & hands on the land","speaker":"Bailey Hutchison · Lead driver: Justin","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":"per_bailey","notes":"STATED: 7:00 AM. Last morning at TruCulture — closing thanks to Bailey and the farm.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s24","dayIdx":3,"start":"09:00","end":"12:00","type":"free","title":"Pack out & load vans","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_truculture","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Not in the itinerary. Movement I ends here — everything must come off the farm before the Delta leg.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s25","dayIdx":3,"start":"12:00","end":"12:45","type":"meal","title":"Lunch (to go) & airport pickups / drop-offs","speaker":"Lead driver: Justin","speakerBio":"","intro":"","av":"","locationId":"loc_jan","personId":null,"notes":"STATED: 12:00 PM. ⚠ Some travellers arrive and some depart today — confirm who, and which van covers the airport run while the rest of the group moves north.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s26","dayIdx":3,"start":"13:00","end":"14:00","type":"interview","title":"Coffee chat — Romona Taylor Williams","speaker":"","speakerBio":"","intro":"","av":"Café audio is the risk. Corner table, cardioid mic close in, or move to the van. Record room tone.","locationId":"loc_coffeeprose","personId":"per_romona","notes":"⚠ NO TIME GIVEN in the itinerary — this block is my placement, between the 12:00 PM airport run and the 3:00 PM Mayersville arrival. CONFIRM WITH ROMONA. Also confirm which Coffee & Prose location.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s27","dayIdx":3,"start":"14:00","end":"15:00","type":"travel","title":"Transit — to Mayersville","speaker":"Lead driver: Justin","speakerBio":"","intro":"","av":"","locationId":"loc_mayersville","personId":null,"notes":"⚠ TIGHT. Jackson to Mayersville is roughly 100 miles via I-20 and MS-1 — closer to 2 hours than 1. If the coffee chat runs to 2:00 PM, the 3:00 PM Mayersville arrival will slip. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Jackson, MS","to":"Mayersville, Issaquena County, MS","mode":"Van","buffer":20},{"id":"s28","dayIdx":3,"start":"15:00","end":"17:30","type":"speaking","title":"Mayersville & Flood Memorial — dialogue on environmental racism","speaker":"Romona Taylor Williams & Teona","speakerBio":"","intro":"Introduce Romona as MCUP co-founder and CEO — thirty years in environmental justice and the ASEEDS model.","av":"Outdoors on the levee: wind is the enemy. Windscreen and a lav on each speaker. Full sun, no shade, no facilities — water for everyone.","locationId":"loc_mayersville","personId":"per_romona","notes":"STATED: 3:00 PM. Core of the Disaster Ecologies thread. Pairs with the Bessie Smith \"Backwater Blues\" epigraph that closes the itinerary.\n\nFACILITATOR TOUCHPOINTS (from the interview guide):\n• TAYLOR — the impact of disasters on the plantation house on the natural levee, and on Black communities on the bottoms. The levee is the argument: who got built up high and who got left in the bottoms.\n• TEONA — using Black people as sandbags, and counter-archives against flood narratives. The official flood record is the thing being argued with here.\n⚠ \"Taylor\" here appears to be Taylor Patterson (named in the itinerary acknowledgements), NOT Romona Taylor Williams — confirm.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s29","dayIdx":3,"start":"17:30","end":"18:30","type":"travel","title":"Transit — Mayersville to Clarksdale","speaker":"Lead driver: Justin","speakerBio":"","intro":"","av":"","locationId":"loc_crossroads","personId":null,"notes":"⚠ TIGHT. Mayersville to Clarksdale is ~103 miles up MS-1 and US-61, roughly 1h50 — not the 1 hour the 5:30/6:30 gap allows. Either leave Mayersville by 4:40 PM or arrive at Crossroads closer to 7:20 PM. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Mayersville, MS","to":"Crossroads Cultural Arts Center, Clarksdale","mode":"Van","buffer":15},{"id":"s30","dayIdx":3,"start":"18:30","end":"19:00","type":"site","title":"Arrival at Crossroads Cultural Arts Center","speaker":"Chandra Williams","speakerBio":"","intro":"","av":"","locationId":"loc_crossroads","personId":"per_chandra","notes":"STATED: 6:30 PM. Ask Chandra’s permission before filming inside the centre.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s31","dayIdx":3,"start":"19:00","end":"21:00","type":"speaking","title":"Dinner & grounding circle","speaker":"Rhondalyn Peairs, Chandra Williams & RJ Fitzpatrick","speakerBio":"","intro":"Rhondalyn Peairs — public historian, founder of Historich, fifth-generation Mississippian. Chandra Williams — artist, educator, Executive Director of Crossroads.","av":"Three speakers over dinner. Table mic will pick up cutlery — put a recorder on each speaker if you want usable tape.","locationId":"loc_crossroads","personId":"per_rhondalyn","notes":"STATED: 7:00 PM. Three named guides in one circle — the densest oral history opportunity of the week outside the scheduled interviews. Get consent from all three at the top.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s32","dayIdx":4,"start":"08:30","end":"09:15","type":"meal","title":"Breakfast @ Meraki","speaker":"Lead driver: Danielle","speakerBio":"","intro":"","av":"","locationId":"loc_meraki","personId":null,"notes":"STATED: 8:30 AM.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s33","dayIdx":4,"start":"09:15","end":"11:00","type":"site","title":"Clarksdale walking tour with local guides","speaker":"","speakerBio":"","intro":"","av":"Walking tour — wireless on the guide, handheld for the group. Downtown ambience is good sound.","locationId":"loc_clarksdale","personId":null,"notes":"STATED as part of the 8:30 AM block. Birthplace of the Blues. CONFIRM guide names and route.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s34","dayIdx":4,"start":"11:00","end":"11:30","type":"travel","title":"Transit to Mound Bayou via US-61","speaker":"Lead driver: Danielle","speakerBio":"","intro":"","av":"","locationId":"loc_moundbayou","personId":null,"notes":"STATED: 11:00 AM transit, 11:30 AM arrival. ~26 miles — the itinerary’s own 30 minutes is realistic. US-61 through cotton country is itself a documentary subject.","status":"pending","actualStart":null,"actualEnd":null,"from":"Clarksdale, MS","to":"Mound Bayou, MS","mode":"Van (US-61)","buffer":10},{"id":"s35","dayIdx":4,"start":"11:30","end":"15:30","type":"site","title":"Mound Bayou — Museum, Taborian Hospital, Peter’s Pottery & Delta Health Center","speaker":"","speakerBio":"","intro":"","av":"Four sites in four hours. Decide in advance which one gets real coverage — trying to film all four evenly will leave you with nothing usable from any.","locationId":"loc_moundbayou","personId":null,"notes":"STATED: 11:30 AM. Founded 1887 by Isaiah T. Montgomery and Benjamin T. Green. ⚠ No lunch block appears anywhere on this day — confirm whether lunch is inside this window or genuinely skipped.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s36","dayIdx":4,"start":"15:30","end":"16:20","type":"travel","title":"Departure toward the Hill Country via MS-6","speaker":"Lead driver: Danielle","speakerBio":"","intro":"","av":"","locationId":"loc_moundtrail","personId":null,"notes":"⚠ The itinerary shows 3:30 PM departure and 4:00 PM at the Mound Trail, but Mound Bayou to Marks is ~40 miles / ~50 minutes. Arrival is realistically 4:20 PM. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Mound Bayou, MS","to":"Mississippi Mound Trail, near Marks","mode":"Van (MS-6)","buffer":15},{"id":"s37","dayIdx":4,"start":"16:20","end":"17:15","type":"site","title":"Mississippi Mound Trail (Dunn Mounds) & Marks — Poor People’s Campaign marker","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_marks","personId":null,"notes":"STATED: 4:00 PM. Marks was the starting point of the 1968 Mule Train; Dr. King called it the poorest place he had seen in America. The mound site grounds the Afro-Indigenous thread. Two stops in under an hour — consider dropping one.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s38","dayIdx":4,"start":"17:15","end":"18:30","type":"travel","title":"Transit — Marks to Foxfire Ranch","speaker":"Lead driver: Danielle","speakerBio":"","intro":"","av":"","locationId":"loc_foxfire","personId":null,"notes":"~58 miles, ~1h16. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Marks, MS","to":"Foxfire Ranch, Waterford, MS","mode":"Van","buffer":15},{"id":"s39","dayIdx":4,"start":"19:00","end":"20:30","type":"meal","title":"Arrival at Foxfire Ranch — dinner","speaker":"Annette Hollowell","speakerBio":"","intro":"","av":"","locationId":"loc_foxfire","personId":"per_annette","notes":"STATED: 7:00 PM. Movement III begins. 80-acre Black-owned farm held by the Hollowell family for over a century.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s40","dayIdx":4,"start":"20:30","end":"22:00","type":"speaking","title":"Days 3–4 field notes & conversation with Rhondalyn Peairs","speaker":"Rhondalyn Peairs","speakerBio":"","intro":"","av":"Second Rhondalyn session of the week. She is a documentarian herself — ask how she wants this recorded.","locationId":"loc_foxfire","personId":"per_rhondalyn","notes":"STATED as part of the 7:00 PM block.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s41","dayIdx":5,"start":"07:00","end":"08:00","type":"meal","title":"Breakfast at Foxfire","speaker":"Lead driver: J.T.","speakerBio":"","intro":"","av":"","locationId":"loc_foxfire","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Not in the itinerary — required to make the 10:00 AM Winona start.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s42","dayIdx":5,"start":"08:15","end":"09:50","type":"travel","title":"Transit — Foxfire Ranch to Winona","speaker":"Lead driver: J.T.","speakerBio":"","intro":"","av":"","locationId":"loc_winona","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. ⚠ ~89 miles, ~1h33 — the 10:00 AM Winona start requires leaving Foxfire by 8:15 AM. This departure is not in the itinerary and needs to be communicated to the group. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Foxfire Ranch, Waterford, MS","to":"Winona, MS","mode":"Van","buffer":20},{"id":"s43","dayIdx":5,"start":"10:00","end":"11:30","type":"interview","title":"Winona historical marker & interview — Vickie Roberts-Ratliff","speaker":"","speakerBio":"","intro":"Vickie Roberts-Ratliff — co-founder of Land Literacy & Legacy, sixth-generation Mississippi landowner, agroforestry advocate, and the person who led the campaign for Fannie Lou Hamer’s state historical marker.","av":"Roadside and full sun. Traffic noise plus heat. Bring shade. If the marker audio is unusable, move into the van.","locationId":"loc_winona","personId":"per_vickie","notes":"STATED: 10:00 AM. Winona is where Fannie Lou Hamer, Annelle Ponder and June Johnson were beaten in jail in 1963 after the bus station arrest. CONFIRM which marker — there is more than one. Get the written release before rolling.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s44","dayIdx":5,"start":"11:30","end":"12:30","type":"travel","title":"Transit — Winona to Graball Landing","speaker":"Lead driver: J.T.","speakerBio":"","intro":"","av":"","locationId":"loc_graball","personId":null,"notes":"~44 miles, ~1h. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Winona, MS","to":"Graball Landing, near Glendora, MS","mode":"Van","buffer":15},{"id":"s45","dayIdx":5,"start":"12:30","end":"13:00","type":"meal","title":"Lunch (to go)","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_graball","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Not in the itinerary. Eat before Graball, not at it — see the reflection block.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s46","dayIdx":5,"start":"13:00","end":"14:30","type":"site","title":"Commemorative reflection — Graball Landing, Tallahatchie River","speaker":"","speakerBio":"","intro":"","av":"⚠ FILMING JUDGEMENT CALL. This is where Emmett Till’s body was recovered in 1955. The memorial sign has been shot and replaced repeatedly; the current one is bulletproof. Brief the group on conduct and filming BEFORE arrival, not on site. Consider recording only ambient sound.","locationId":"loc_graball","personId":null,"notes":"STATED: 1:00 PM. Unpaved riverbank, limited pull-off, heat and insects. The itinerary’s closing dedication names Emmett Till directly.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s47","dayIdx":5,"start":"14:30","end":"16:05","type":"travel","title":"Return transit — Graball Landing to Foxfire Ranch","speaker":"Lead driver: J.T.","speakerBio":"","intro":"","av":"","locationId":"loc_foxfire","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. ~81 miles, ~1h35. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Graball Landing, MS","to":"Foxfire Ranch, Waterford, MS","mode":"Van","buffer":20},{"id":"s48","dayIdx":5,"start":"17:00","end":"18:15","type":"interview","title":"Land story interview — Annette Hollowell","speaker":"","speakerBio":"","intro":"Annette Hollowell — steward of Foxfire Ranch, 80 acres held by her family for over a century, a haven for healing, storytelling and Hill Country Blues.","av":"Golden hour at Foxfire is the best visual window of the week. Record BEFORE dinner service starts, not during — plates and conversation will bury the tape.","locationId":"loc_foxfire","personId":"per_annette","notes":"STATED: 5:00 PM, listed together with dinner and Day 5 field notes. Splitting the interview out from the meal so it actually gets clean audio.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s49","dayIdx":5,"start":"18:15","end":"19:45","type":"meal","title":"Dinner at Foxfire","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_foxfire","personId":"per_helen","notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure.  Mrs. Helen Hollowell cooks here — her culinary-legacy question set is on her record. Catch her BEFORE service starts.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s50","dayIdx":5,"start":"19:45","end":"21:00","type":"free","title":"Day 5 field notes","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_foxfire","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s51","dayIdx":6,"start":"08:00","end":"08:45","type":"meal","title":"Breakfast at Foxfire","speaker":"Lead driver: Danielle","speakerBio":"","intro":"","av":"","locationId":"loc_foxfire","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s52","dayIdx":6,"start":"08:55","end":"09:15","type":"travel","title":"Transit — Foxfire Ranch to Holly Springs","speaker":"Lead driver: Danielle","speakerBio":"","intro":"","av":"","locationId":"loc_hollysprings","personId":null,"notes":"~10 miles, ~16 min — the shortest leg of the week. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Foxfire Ranch, Waterford, MS","to":"Holly Springs, MS","mode":"Van","buffer":10},{"id":"s53","dayIdx":6,"start":"09:15","end":"12:15","type":"site","title":"Holly Springs — Ida B. Wells tour, Hugh Craft House & Hillcrest Cemetery","speaker":"","speakerBio":"","intro":"","av":"Three sites in three hours, one of them a cemetery. Uneven ground.","locationId":"loc_hollysprings","personId":null,"notes":"STATED: 9:15 AM. Ida B. Wells was born here in 1862. CONFIRM whether the Ida B. Wells-Barnett Museum is on the route and its hours.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s54","dayIdx":6,"start":"12:15","end":"12:55","type":"travel","title":"Transit — Holly Springs to Oxford","speaker":"Lead driver: Danielle","speakerBio":"","intro":"","av":"","locationId":"loc_oxford","personId":null,"notes":"~31 miles, ~40 min. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Holly Springs, MS","to":"Oxford, MS","mode":"Van","buffer":10},{"id":"s55","dayIdx":6,"start":"13:00","end":"14:00","type":"meal","title":"Lunch on the Square — Oxford","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_oxford","personId":null,"notes":"STATED: 1:00 PM.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s56","dayIdx":6,"start":"14:00","end":"15:30","type":"site","title":"Burns-Belfry & BIPOC placemaking","speaker":"Rhondalyn Peairs (Historich, Oxford-based)","speakerBio":"","intro":"","av":"","locationId":"loc_oxford","personId":"per_rhondalyn","notes":"STATED as part of the 1:00 PM block. Burns-Belfry Museum and Multicultural Center — Oxford’s first Black church.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s57","dayIdx":6,"start":"15:30","end":"17:00","type":"site","title":"Ole Miss Freedom Tour","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_oxford","personId":null,"notes":"STATED as part of the 1:00 PM block. Covers James Meredith’s 1962 integration of the university. CONFIRM the guide and booking.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s58","dayIdx":6,"start":"17:00","end":"17:35","type":"travel","title":"Return transit — Oxford to Foxfire Ranch","speaker":"Lead driver: Danielle","speakerBio":"","intro":"","av":"","locationId":"loc_foxfire","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. ~21 miles, ~32 min. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Oxford, MS","to":"Foxfire Ranch, Waterford, MS","mode":"Van","buffer":15},{"id":"s59","dayIdx":6,"start":"18:00","end":"19:30","type":"meal","title":"Closing dinner","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_foxfire","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Listed only as \"Evening.\"","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s60","dayIdx":6,"start":"19:30","end":"20:30","type":"speaking","title":"Ecotones readings","speaker":"","speakerBio":"","intro":"","av":"Readings are the participants’ own words — this is the payoff of a week of journals. Worth proper audio.","locationId":"loc_foxfire","personId":null,"notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s61","dayIdx":6,"start":"20:30","end":"22:00","type":"speaking","title":"Live Hill Country Blues — Cameron Kimbrough","speaker":"Cameron Kimbrough","speakerBio":"","intro":"","av":"⚠ MUSIC RELEASE IS SEPARATE from an oral history consent. If you record the performance you need performance rights. Sort this before Friday.","locationId":"loc_foxfire","personId":"per_cameron","notes":"⚠ TIME TBC — inferred, not stated in the itinerary. Confirm before departure. Foxfire is a Hill Country Blues venue — this is the closing note of the whole school.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s62","dayIdx":7,"start":"07:00","end":"08:00","type":"meal","title":"Breakfast & final closing reflections","speaker":"Lead driver: Teona","speakerBio":"","intro":"","av":"Last chance for closing reflections on tape. Everyone is tired and honest — often the best material of the week.","locationId":"loc_foxfire","personId":null,"notes":"STATED: 7:00 AM.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s63","dayIdx":7,"start":"08:15","end":"11:25","type":"travel","title":"Depart Foxfire Ranch — transit to Jackson airport","speaker":"Lead driver: Teona","speakerBio":"","intro":"","av":"","locationId":"loc_jan","personId":null,"notes":"STATED: 8:15 AM depart, 11:00 AM drop-off. ⚠ ~181 miles is closer to 3h10 than 2h45, before any stop. Flights before 1:00 PM are at risk. Verify every departure time against this leg. ⚠ Drive time is an estimate, not from the itinerary. Verify with the lead driver.","status":"pending","actualStart":null,"actualEnd":null,"from":"Foxfire Ranch, Waterford, MS","to":"Jackson–Medgar Wiley Evers Intl Airport","mode":"Van","buffer":30},{"id":"s64","dayIdx":7,"start":"11:25","end":"12:00","type":"site","title":"Jackson airport drop-off","speaker":"Lead driver: Teona","speakerBio":"","intro":"","av":"","locationId":"loc_jan","personId":null,"notes":"STATED: 11:00 AM. Adjusted to follow the real drive time.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0},{"id":"s65","dayIdx":7,"start":"12:00","end":"13:00","type":"interview","title":"OPTIONAL — community conversation with Cooperative Jackson","speaker":"","speakerBio":"","intro":"","av":"","locationId":"loc_coopjackson","personId":"per_coopjackson","notes":"STATED: 11:30 AM–12:30 PM. Lunch and return to airport are SELF-PAY. Optional. Confirm the venue and who has actually opted in — and note this collides with the adjusted airport drop-off above.","status":"pending","actualStart":null,"actualEnd":null,"from":"","to":"","mode":"","buffer":0}],"people":[{"id":"per_bailey","name":"Bailey Hutchison","role":"Farmer · Land story interview","org":"TruCulture Farm","phone":"","email":"","relation":"Horticulturist, herbalist and artist from the 7th Ward of New Orleans. Third-generation grower specializing in Afro-Indigenous ethnobotany. Founder of TruCulture Farm, spanning New Orleans and Hattiesburg.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Scheduled","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["Afro-Indigenous ethnobotany","Third-generation growing","7th Ward to Hattiesburg","Land in Black hands","Culture sharing against racial capitalism"],"notes":"SCHEDULED INTERVIEW — Mon 8/17, 1:30 PM, 75 minutes, at TruCulture Farm. The only interview in the itinerary with a stated duration. Outdoor farm setting: wind screen essential, watch for tractor and livestock noise. Bailey is also a lead driver on Sun 8/16 — do not schedule anything that collides with the New Orleans run.  ⚠ SPELLING: the itinerary says \"Hutchison\", the interview guide says \"Hutchinson\". Confirm which is correct before anything is captioned or archived.","recordedOn":"","priority":true,"focus":"Afro-Indigenous Agriculture, Land Vision & Fannie Lou Hamer","guideTitle":"Director of TruCulture Farm","questions":[{"id":"per_bailey_q1","label":"Ancestral Grounding","text":"What is your earliest sensory memory of the dirt, plants, or outdoors in Mississippi — a scent, a taste, or a texture — that told you land was a place of safety or belonging?","asked":false},{"id":"per_bailey_q2","label":"On Afro-Indigenous Practices","text":"Please tell us the story of how you came to steward this land. How do Afro-Indigenous agricultural practices shape the way you tend, harvest, and listen to the soil at TruCulture Farm? How does your role as a healer impact your approach to growing food and feeding people?","asked":false},{"id":"per_bailey_q3","label":"On Fannie Lou Hamer’s Spirit","text":"Mrs. Fannie Lou Hamer famously taught us that \"if you have a pig in your backyard, if you have some vegetables in your garden... nobody can push you around.\" And to fight for reproductive justice. How does the memory of Mrs. Hamer inform your daily practices here at TruCulture?","asked":false},{"id":"per_bailey_q4","label":"On Environmental Shifts","text":"Have you noticed changes in the climate, soil, or growing seasons in your time on the land? How are you adapting your agricultural practices to these shifts?","asked":false},{"id":"per_bailey_q5","label":"On the Vision for TruCulture Farm","text":"Looking toward the future, what is your boldest vision for TruCulture Farm as a living sanctuary, learning hub, and space for Afro-Indigenous agricultural reclamation in Hattiesburg and New Orleans? And how will TruCulture work continue to be a bridge between NOLA and Hattiesburg?","asked":false}]},{"id":"per_vickie","name":"Vickie Roberts-Ratliff","role":"Land advocate · Interview","org":"Land, Literacy and Legacy","phone":"","email":"","relation":"Co-Founder of Land Literacy & Legacy. Sixth-generation Mississippi landowner and agroforestry advocate who led the campaign for Fannie Lou Hamer’s state historical marker.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Scheduled","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["Six generations of land ownership","Agroforestry","The Fannie Lou Hamer marker campaign","Heirs’ property","Winona and Hamer’s 1963 arrest"],"notes":"SCHEDULED INTERVIEW — Thu 8/20, 10:00 AM, at the Winona historical marker. Outdoor and roadside: traffic noise plus full morning sun. Bring shade and a windscreen; consider recording in the van or a nearby interior if the marker audio is unusable.","recordedOn":"","priority":true,"focus":"Black Family Land Retention, Winona Marker & Fannie Lou Hamer","guideTitle":"Director of Land Literacy & Legacy","questions":[{"id":"per_vickie_q1","label":"Ancestral Grounding","text":"As a sixth-generation landowner, what does it feel like in your body to walk the very same acres of land that your family fought to keep despite the systemic loss of land that Black people face?","asked":false},{"id":"per_vickie_q2","label":"On the Winona Marker","text":"You spearheaded the historic campaign to erect the official Mississippi State Historical Marker at the Montgomery County Jail site in Winona, where Mrs. Fannie Lou Hamer, June Johnson, Euvester Simpson, and fellow activists were brutally beaten in 1963. What was the spiritual and personal journey of bringing that historical memory back to the land?","asked":false},{"id":"per_vickie_q3","label":"On Land Literacy","text":"What are the most critical steps, tools, and strategies for Black families looking to protect, hold, and pass down ancestral land across generations?","asked":false},{"id":"per_vickie_q4","label":"On Visions for Black Land","text":"What is your vision for the future of Black family land retention and timber stewardship in Mississippi over the next fifty years?","asked":false,"sub":["Can you talk about your visions of civil rights memorialization on your own land and why you feel it’s important?","How do you keep Fannie Lou Hamer alive in the work you do in Winona?"]}]},{"id":"per_annette","name":"Annette Hollowell","role":"Landowner & host · Land story interview","org":"Foxfire Ranch","phone":"","email":"","relation":"Steward of Foxfire Ranch, an 80-acre Black-owned farm and cultural sanctuary in Waterford held by the Hollowell family for over a century. A haven for healing, storytelling and Hill Country Blues traditions.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Scheduled","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["A century of family landholding","Foxfire as sanctuary","Hill Country Blues lineage","Healing and gathering space","Keeping Black land in Black hands"],"notes":"SCHEDULED INTERVIEW — Thu 8/20, 5:00 PM, at Foxfire Ranch, paired with dinner and Day 5 field notes. Golden hour is the visual opportunity of the whole week; dinner service is the audio risk. Consider recording before the meal rather than during.","recordedOn":"","priority":true,"focus":"Black Land Ownership, Hill Country Blues, Culinary Legacy & Cultural Sanctuary","guideTitle":"Manager & Steward of Foxfire Ranch","questions":[{"id":"per_annette_q1","label":"Ancestral Grounding","text":"Foxfire Ranch has been in your family for over a century. Who is the ancestor or family member you feel most strongly beside you when you host people on this 80-acre sanctuary?","asked":false},{"id":"per_annette_q2","label":"On Creating Cultural Sanctuary","text":"Foxfire Ranch is famous for preserving Hill Country Blues and providing a haven for rest and healing. How do culture, food, music, and Black land ownership intersect here?","asked":false},{"id":"per_annette_q3","label":"On Family Legacy & Stewardship","text":"What did it take for your family to hold onto this land through changing political and economic eras, and how has its purpose evolved under your care?","asked":false},{"id":"per_annette_q4","label":"On the Horizon","text":"What is your vision for Foxfire Ranch over the next century as a place for Black land stewards, storytellers, and community gatherings?","asked":false}]},{"id":"per_romona","name":"Romona Taylor Williams","role":"Organizer · Coffee chat","org":"MCUP (Mississippi Communities United for Prosperity)","phone":"","email":"","relation":"Co-Founder and CEO of MCUP. Thirty years in community development and environmental justice, and architect of the nationally recognized ASEEDS model.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Scheduled","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["Thirty years of EJ organizing","The ASEEDS model","Mayersville and the flood memorial","Environmental racism and structural accountability","Community development in the Delta"],"notes":"TIME NOT STATED in the itinerary — provisionally 1:00–2:00 PM Tue 8/18 at Coffee & Prose. Also co-leads the 3:00 PM Mayersville flood memorial dialogue, which is the richer recording opportunity of the two. Café audio will be difficult; the Mayersville site is outdoors but quieter.","recordedOn":"","priority":true,"focus":"Environmental Justice, Climate Resistance & Data Centers","guideTitle":"CEO of MCUP & ASEEDS Project Lead","questions":[{"id":"per_romona_q1","label":"Ancestral Grounding","text":"When you close your eyes and think about your lineage in Mississippi, what is a specific lesson, prayer, or piece of advice from an ancestor or elder that keeps you grounded when fighting for your community?","asked":false},{"id":"per_romona_q2","label":"On Frontline Defense","text":"You have spent decades fighting environmental racism and advocating for green/grey infrastructure. How do you see the current surge of resource-extractive industries — such as energy-and-water-guzzling data centers — threatening Mississippi’s Black and rural communities?","asked":false},{"id":"per_romona_q3","label":"On Data & Resource Exploitation","text":"Tech infrastructure demands massive amounts of local water and power. How is MCUP organizing frontline communities to resist this environmental exploitation while building equitable community policy?","asked":false},{"id":"per_romona_q4","label":"On Visions for Black Futures","text":"Looking ahead, what is your ultimate vision for Mississippi’s frontline communities at the intersections of race and environmental justice?","asked":false}]},{"id":"per_rhondalyn","name":"Rhondalyn Peairs","role":"Public historian","org":"Historich","phone":"","email":"","relation":"Public historian and founder of Historich, an educational services and tourism company in Oxford. A fifth-generation Mississippian working as educator, documentarian and cultural entrepreneur.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Not started","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["Fifth-generation Mississippi","Public history practice","Who gets to tell Mississippi’s story","Documentary methods","Delta and Hill Country connections"],"notes":"Present twice: Tue 8/18 grounding circle at Crossroads, and Wed 8/19 evening conversation at Foxfire. She is a documentarian herself — worth a conversation about method and about how she wants this recorded, not just a subject interview.","recordedOn":"","priority":false,"focus":"Black History, Oral History & Heritage Preservation","guideTitle":"Director of Historich","questions":[{"id":"per_rhondalyn_q1","label":"Ancestral Grounding","text":"Who was the first storyteller or historian in your own family or community — official or unofficial — who taught you that Black life in Mississippi was sacred and worth preserving?","asked":false},{"id":"per_rhondalyn_q2","label":"On Preserving Unwritten History","text":"How do you approach the work of preserving Black history and heritage in places where official markers or archives have historically ignored or erased Black life?","asked":false},{"id":"per_rhondalyn_q3","label":"On Storytelling as Resistance","text":"In what ways do local oral histories and landscape stories challenge the prevailing national narratives about Mississippi being defined only by its trauma?","asked":false},{"id":"per_rhondalyn_q4","label":"On Passing the Torch","text":"How can heritage preservation be used as an active tool to empower young Mississippians to claim their home and shape its future?","asked":false}]},{"id":"per_chandra","name":"Chandra Williams","role":"Arts director","org":"Crossroads Cultural Arts Center","phone":"","email":"","relation":"Artist, educator and Executive Director of Crossroads Cultural Arts Center in Clarksdale. The center treats Blues as a living African cultural practice and provides space to reclaim Black cultural identity amid inequity and appropriation.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Not started","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["Blues as living African practice","Cultural appropriation and reclamation","Running an arts center in Clarksdale","Youth and arts education"],"notes":"Host of the Tue 8/18 dinner and grounding circle. Ask permission before recording in her space. clarksdalescrossroads.com","recordedOn":"","priority":false,"focus":"Blues Epistemology & Delta Cultural Arts","guideTitle":"Crossroads Cultural Arts Center","questions":[{"id":"per_chandra_q1","label":"Ancestral Grounding","text":"Growing up or living in the Delta, when was the first time you heard a Blues song or held a piece of Delta culture and felt, \"This is the story of my people and my home\"?","asked":false},{"id":"per_chandra_q2","label":"On Blues as Living Archive","text":"Drawing on Clyde Woods’ concept of the \"Blues Epistemology,\" how is the Blues more than just music — how is it a philosophy of survival, critique, and spatial justice in the Delta?","asked":false},{"id":"per_chandra_q3","label":"On Cultural Center as Sanctuary","text":"How does Crossroads Cultural Arts Center serve as a grounding space for local artists, community organizers, and residents in Clarksdale?","asked":false},{"id":"per_chandra_q4","label":"On Delta Futures","text":"Clarksdale is globally known for its past, but how are local artists and cultural preservers using Delta heritage to build new creative and economic futures today?","asked":false}]},{"id":"per_rj","name":"RJ Fitzpatrick","role":"Community partner","org":"Crossroads / Clarksdale","phone":"","email":"","relation":"Named in the itinerary as part of the Tuesday grounding circle at Crossroads Cultural Arts Center and thanked in the acknowledgements.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Not started","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["Clarksdale community work","Delta organizing"],"notes":"ROLE UNCLEAR from the itinerary — listed in the grounding circle and the acknowledgements but with no bio. Confirm who RJ is and whether an interview is wanted.  ⚠ NO QUESTION SET in the interview guide — use the shared land & water bank, or write one before the day.","recordedOn":"","priority":false,"focus":"","guideTitle":"","questions":[]},{"id":"per_cameron","name":"Cameron Kimbrough","role":"Musician","org":"Hill Country Blues","phone":"","email":"","relation":"Hill Country Blues musician performing at the closing dinner. Carries the Kimbrough Hill Country lineage.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Not started","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["Hill Country Blues lineage","The Kimbrough tradition","Playing for the community vs. for tourists"],"notes":"Performs Fri 8/21 evening at the closing dinner. MUSIC RELEASE IS SEPARATE from an interview release — if you record the performance you need performance rights, not just an oral history consent. Sort this before Friday.  ⚠ NO QUESTION SET in the interview guide — use the shared land & water bank, or write one before the day.","recordedOn":"","priority":false,"focus":"","guideTitle":"","questions":[]},{"id":"per_helen","name":"Mrs. Helen Hollowell","role":"Master Cook · Culinary legacy interview","org":"Foxfire Ranch","phone":"","email":"","relation":"Master Cook of Foxfire Ranch. Feeds the people who come to the 80-acre family sanctuary; her kitchen is the other half of what Foxfire is.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Scheduled","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["Traditional ingredients and techniques","Cooking as love and sanctuary","Feeding people from this land","A century of family recipes"],"notes":"ADDED FROM THE INTERVIEW GUIDE — not named in the itinerary. The guide pairs her with Annette under one heading but gives her a dedicated culinary-legacy question. Best window is Thu 8/20 at Foxfire around the 5:00 PM dinner. ⚠ A kitchen interview during dinner service will not yield usable audio — catch her before service or the morning after. CONFIRM she is available and willing.","recordedOn":"","priority":true,"focus":"Food, Healing & Culinary Legacy","guideTitle":"Master Cook of Foxfire Ranch","questions":[{"id":"per_helen_q1","label":"On Food, Healing & Culinary Legacy","text":"Mrs. Helen, feeding people from this land is an act of deep love and sanctuary. When you are in the kitchen preparing these recipes, what traditional ingredients or techniques are you holding onto, and what do you hope people feel in their spirits when they sit down to eat your food at Foxfire Ranch?","asked":false}]},{"id":"per_coopjackson","name":"Cooperation Jackson","role":"Organization · Cooperative economics","org":"Cooperation Jackson","phone":"","email":"","relation":"Solidarity economy organization building dual power in Jackson through community land trusts and worker cooperatives.","consent":{"verbal":false,"written":false,"media":false,"archive":false},"stage":"Not started","device":"","files":[],"recSec":0,"recStartedAt":null,"topics":["Dual power in Jackson","Community land trusts","Worker cooperatives","Fannie Lou Hamer’s Freedom Farm and Pig Bank","June Jordan’s Mississippi Black Home"],"notes":"⚠ TIED TO AN OPTIONAL BLOCK — Sat 8/22, 11:30 AM–12:30 PM, after the airport drop-off, lunch self-pay. This session may not happen at all. ⚠ NAME DISCREPANCY: the itinerary says \"Cooperative Jackson\", the interview guide says \"Cooperation Jackson\" — the organization is Cooperation Jackson. No individual interviewee is named; confirm who would be speaking before treating this as an oral history rather than a group conversation.","recordedOn":"","priority":false,"focus":"Land Trusts, Cooperative Economics & Fannie Lou Hamer’s Legacy","guideTitle":"Cooperation Jackson","questions":[{"id":"per_coopjackson_q1","label":"Ancestral Grounding","text":"In June Jordan’s 1971 essay Mississippi Black Home, she wrote about Mississippi as a place where Black people can build self-determined lives together. What personal or communal calling brought you to the collective work of building dual power in Jackson?","asked":false},{"id":"per_coopjackson_q2","label":"On Fannie Lou Hamer’s Cooperative Lineage","text":"Long before modern solidarity economy movements, Mrs. Fannie Lou Hamer pioneered cooperative economic models through the Freedom Farm Cooperative and Pig Bank. How does Cooperation Jackson draw upon Mrs. Hamer’s radical legacy of collective ownership, mutual aid, and Black economic self-determination in your urban work today?","asked":false},{"id":"per_coopjackson_q3","label":"On Dual Power & Community Land Trusts","text":"How does Cooperation Jackson use community land trusts and worker cooperatives to take land off the speculative market and return it directly to community control?","asked":false},{"id":"per_coopjackson_q4","label":"On Reclaiming the Urban Landscape","text":"What is your ultimate vision for Jackson as a beacon of Black cooperative economics and spatial justice for the region and the country?","asked":false}]}],"locations":[{"id":"loc_jan","name":"Jackson–Medgar Wiley Evers International Airport","address":"100 International Dr, Jackson, MS 39208","kind":"transit","meetingPoint":"Baggage claim, lower level — vans stage at the curb outside Door 3","parking":"Cell-phone lot for staging; short-term garage if you have to walk in","access":"Fully accessible","contact":"Lead driver Teona (arrival) / Teona (departure)","notes":"Airport is named for Medgar Evers — worth naming that on the ride out. Arrival pickups 2:30 PM Sat 8/15; return drop-off 11:00 AM Sat 8/22.","lat":32.3112,"lng":-90.0759},{"id":"loc_truculture","name":"TruCulture Farm — Hattiesburg","address":"Hattiesburg, MS (exact address TBC)","kind":"ecological","meetingPoint":"Farm gate — opening circle in the field, not the house","parking":"On-farm; keep the lane clear for the second van","access":"Uneven ground, outdoor program. Sun exposure — shade is limited midday.","contact":"Bailey Hutchison, TruCulture Farm","notes":"Base for Movement I (8/15–8/18). Black Afro-Indigenous farm spanning New Orleans and Hattiesburg. Opening circle + welcome dinner 8/15; land immersion 8/17; wrap-up 8/18. ADDRESS NEEDED.","lat":31.3271,"lng":-89.2903},{"id":"loc_ccfm","name":"Crescent City Farmers Market — TruCulture Community Market","address":"750 Carondelet St, New Orleans, LA 70130","kind":"community","meetingPoint":"TruCulture stall inside the market","parking":"Street parking is tight — plan a drop-off and a separate park","access":"Street level, accessible","contact":"Bailey Hutchison","notes":"Sunday market. Tour + lunch here. Confirm the market is running Sun 8/16 and that TruCulture has a stall that day.","lat":29.9414,"lng":-90.07},{"id":"loc_bayou","name":"Bayou Road Corridor — New Orleans","address":"Bayou Rd, New Orleans, LA 70119","kind":"community","meetingPoint":"Community Book Center storefront","parking":"Street parking on Bayou Rd; vans may need to circle","access":"Historic storefronts — some have a step at the door","contact":"","notes":"Historic Black commercial corridor. Community Book Center is the anchor stop.","lat":29.9749,"lng":-90.0722},{"id":"loc_ashe","name":"Ashé Cultural Arts Center","address":"1712 Oretha Castle Haley Blvd, New Orleans, LA 70113","kind":"community","meetingPoint":"Main lobby","parking":"Street parking on O.C. Haley Blvd","access":"Accessible","contact":"","notes":"Black arts and culture institution on the O.C. Haley corridor. Confirm a contact and whether filming is permitted.","lat":29.9364,"lng":-90.0836},{"id":"loc_coffeeprose","name":"Coffee & Prose","address":"Jackson, MS (confirm location)","kind":"community","meetingPoint":"Café — grab a quiet corner table for the recording","parking":"Street","access":"Café setting — ambient noise is the main risk for audio","contact":"Romona Taylor Williams, MCUP","notes":"Coffee chat with Romona Taylor Williams. TIME NOT STATED in the itinerary — provisionally slotted 1:00–2:00 PM Tue 8/18 between the airport run and the Mayersville arrival. CONFIRM.","lat":32.2988,"lng":-90.1848},{"id":"loc_mayersville","name":"Mayersville & Flood Memorial","address":"Mayersville, Issaquena County, MS 39113","kind":"ecological","meetingPoint":"Flood memorial site — regroup at the vans before walking","parking":"Roadside; keep vans off soft shoulder","access":"Outdoor, levee-adjacent. Full sun, no facilities. Bring water.","contact":"Romona Taylor Williams · Teona","notes":"Dialogue on environmental racism with Taylor & Teona. County seat of the least-populous county in Mississippi. Levee and backwater flooding context — pairs with the Bessie Smith \"Backwater Blues\" epigraph in the itinerary.","lat":32.904,"lng":-91.0498},{"id":"loc_crossroads","name":"Crossroads Cultural Arts Center","address":"Clarksdale, MS 38614","kind":"community","meetingPoint":"Main entrance","parking":"Downtown Clarksdale street parking","access":"Confirm accessibility with Chandra Williams","contact":"Chandra Williams, Executive Director · clarksdalescrossroads.com","notes":"Arrival 6:30 PM Tue 8/18, dinner + grounding circle 7:00 PM with Rhondalyn Peairs, Chandra Williams & RJ Fitzpatrick. Center treats Blues as a living African cultural practice. EXACT ADDRESS NEEDED.","lat":34.2001,"lng":-90.5726},{"id":"loc_meraki","name":"Meraki Roasting Company","address":"Clarksdale, MS 38614","kind":"community","meetingPoint":"Café — breakfast before the walking tour steps off","parking":"Downtown street parking","access":"Street level","contact":"","notes":"Breakfast 8:30 AM Wed 8/19, then the Clarksdale walking tour departs from here with local guides.","lat":34.2003,"lng":-90.5712},{"id":"loc_clarksdale","name":"Downtown Clarksdale — walking tour","address":"Downtown Clarksdale, MS 38614","kind":"historical","meetingPoint":"Steps off from Meraki after breakfast","parking":"Leave vans parked downtown for the duration","access":"Sidewalk walking tour — pace for the whole group","contact":"Local guides TBC","notes":"Globally recognized as the birthplace of the Blues and a hub for Delta culture and civil rights resistance. Confirm guide names and the tour route.","lat":34.2001,"lng":-90.5726},{"id":"loc_moundbayou","name":"Mound Bayou — Museum, Taborian Hospital, Peter’s Pottery, Delta Health Center","address":"Mound Bayou, Bolivar County, MS 38762","kind":"historical","meetingPoint":"Mound Bayou Museum — regroup there before the site circuit","parking":"On-site at each stop","access":"Multiple buildings — confirm access at Taborian Hospital","contact":"","notes":"Founded 1887 by Isaiah T. Montgomery and Benjamin T. Green — one of America’s oldest self-governing Black towns. Four stops in four hours (11:30–3:30) is tight; the Delta Health Center alone carries the whole history of community health centers in the US.","lat":33.8807,"lng":-90.7276},{"id":"loc_moundtrail","name":"Mississippi Mound Trail — Dunn Mounds","address":"Near Marks, Quitman County, MS","kind":"historical","meetingPoint":"Roadside pull-off at the marker","parking":"Shoulder only","access":"Outdoor, uneven ground, late-afternoon sun","contact":"","notes":"Indigenous mound site — grounds the Afro-Indigenous thread of the school. Confirm exact pull-off and whether the site is on private land.","lat":34.2543,"lng":-90.2718},{"id":"loc_marks","name":"Marks — Poor People’s Campaign marker","address":"Marks, Quitman County, MS 38646","kind":"historical","meetingPoint":"At the marker","parking":"Street","access":"Sidewalk-adjacent","contact":"","notes":"Starting point of the 1968 Mule Train to Washington. Dr. King identified Marks as the poorest place he had seen in America.","lat":34.2554,"lng":-90.2723},{"id":"loc_foxfire","name":"Foxfire Ranch","address":"Waterford, Marshall County, MS 38685","kind":"lodging","meetingPoint":"Main pavilion / stage area","parking":"On-site, ample","access":"Rural 80-acre property. Outdoor stage and grounds; confirm accessible sleeping quarters.","contact":"Annette Hollowell, Foxfire Ranch","notes":"Base for Movement III (8/19–8/22). 80-acre Black-owned farm and cultural sanctuary, held by the Hollowell family for over a century. Hill Country Blues venue. EXACT ADDRESS NEEDED.","lat":34.6337,"lng":-89.4623},{"id":"loc_winona","name":"Winona historical marker","address":"Winona, Montgomery County, MS 38967","kind":"historical","meetingPoint":"At the marker","parking":"Street","access":"Roadside, full sun — bring shade for a 10:00 AM outdoor interview","contact":"Vickie Roberts-Ratliff, Land Literacy & Legacy","notes":"Site of the 1963 jailhouse beating of Fannie Lou Hamer, Annelle Ponder, June Johnson and others after the Winona bus station arrest. Confirm which marker — there is more than one.","lat":33.4818,"lng":-89.7284},{"id":"loc_graball","name":"Graball Landing — Tallahatchie River","address":"Graball Landing, near Glendora, Tallahatchie County, MS","kind":"historical","meetingPoint":"Riverbank at the memorial sign","parking":"Gravel pull-off, limited — stage vans single file","access":"Unpaved, riverbank, uneven. No facilities. Heat and insects.","contact":"","notes":"The site where Emmett Till’s body was recovered from the Tallahatchie in 1955. The memorial sign here has been shot and replaced repeatedly; the current one is bulletproof. Handle as a commemorative space — brief the group before arrival about conduct and filming.","lat":33.814,"lng":-90.2971},{"id":"loc_hollysprings","name":"Holly Springs — Ida B. Wells tour, Hugh Craft House, Hillcrest Cemetery","address":"Holly Springs, Marshall County, MS 38635","kind":"historical","meetingPoint":"Courthouse square — regroup before the walking tour","parking":"Square parking","access":"Cemetery ground is uneven","contact":"","notes":"Ida B. Wells was born in Holly Springs in 1862. Confirm whether the Ida B. Wells-Barnett Museum is on the route and its hours.","lat":34.7676,"lng":-89.4487},{"id":"loc_oxford","name":"Oxford — the Square, Burns-Belfry, Ole Miss Freedom Tour","address":"Oxford, Lafayette County, MS 38655","kind":"academic","meetingPoint":"Oxford Square for lunch, then Burns-Belfry","parking":"Square garage — vans may not clear the height, confirm","access":"Campus tour involves distance walking","contact":"Rhondalyn Peairs, Historich (Oxford-based)","notes":"Burns-Belfry Museum and Multicultural Center — Oxford’s first Black church. Ole Miss Freedom Tour covers James Meredith’s 1962 integration. Confirm the Freedom Tour guide and booking.","lat":34.3665,"lng":-89.5192},{"id":"loc_coopjackson","name":"Cooperative Jackson","address":"Jackson, MS (confirm venue)","kind":"community","meetingPoint":"TBC","parking":"TBC","access":"TBC","contact":"","notes":"OPTIONAL 11:30 AM–12:30 PM Sat 8/22 after airport drop-off. Lunch and return to airport are self-pay. Confirm venue and whether anyone has actually opted in.","lat":32.2988,"lng":-90.1848}],"log":[],"createdAt":0,"updatedAt":0,"sharedBank":{"title":"Black Land and Water Stories — general bank","source":"Gayle T. Tate · Black Ecologies Summer Institute 2026. Written for the Northern Neck & Middle Peninsula of Virginia project; adapt the Virginia-specific references before using in Mississippi. [One typo corrected from the source: 'growing n them' \u2192 'growing in them'.]","groups":[{"name":"Water","qs":["Please tell us the story of how you came to fishing and working with the water? What are some of your more memorable moments in this development?","Many people say that they have familial connections to these practices. Do you? If so could you describe those? If not could you tell us more about how you came to it?","What are some of your favorite things to catch? What are some of the critical steps in catching this kind of fish?","Do you eat or share or both? If so, please tell us about that.","What other benefits do you find in fishing or being on the water?","What is your favorite way to prepare fish? Tell us the rough outline of a favorite recipe?","Do you hunt or garden? Could you tell us about your other experiences with these? What do you get out of these activities?"]},{"name":"Land","qs":["Please tell us the story of how you came to stewarding the land and or growing on it? What are some of your more memorable moments in this development?","Many people say that they have familial connections to these practices. Do you? If so could you describe those? If not could you tell us more about how you came to it?","What are some of your favorite things to grow? What are some of the critical steps in growing these plants? How do you use them?","What is your favorite way to prepare what you grow? Could you tell us the rough outline of a favorite recipe?","Do you eat or share or both? If so, please tell us about that.","What other benefits do you find in growing on the land or stewarding it?","Do you hunt or fish? Could you tell us about your other experiences with these? What do you get out of these activities?"]},{"name":"Spirit, change & extraction","qs":["Many people we have interviewed for this work describe spiritual connections they establish to or through land or water. If you’re comfortable discussing it, can you tell us about any such connections you find outdoors?","Have you noticed changes in these systems in your time fishing, hunting, or growing in them? Are there more or less of certain species? Have you noticed changes in the water or the land? If so what do you think is making these changes?","Have you noticed changes in the land or atmosphere in your time growing on them? Have certain things become more difficult to grow? If so what do you think is making these changes?","What do you think about the proposed data center on the Rappahannock River in Caroline that will siphon 90 million gallons of water a day from the river? Or about Virginia being the data center capital of the U.S.? [ADAPT — swap for the Mississippi data-center context Romona raises.]"]}]}};
+
+var SEG_TYPES = {
+  speaking:  { label:'Speaking',  ic:'🎙', hint:'Talk, lecture, panel, welcome' },
+  interview: { label:'Oral History', ic:'◍', hint:'Recorded interview session' },
+  travel:    { label:'Travel',    ic:'→',  hint:'Drive, walk, flight, transfer' },
+  site:      { label:'Site Visit',ic:'⌖',  hint:'Walking seminar, land visit, archive' },
+  meal:      { label:'Meal',      ic:'◔',  hint:'Meal or break' },
+  free:      { label:'Open',      ic:'○',  hint:'Unstructured / buffer' }
+};
+var INTERVIEW_STAGES = ['Not started','Scheduled','In progress','Recorded','Transcribed','Archived'];
+
+/* ---------- STATE ---------- */
+var ops = null;      // field-ops layer (this app owns it)
+var view = 'now';
+var activeDayIdx = 0;
+var tick = null;
+var recTimer = null;
+
+function uid(p){ return (p||'x') + Math.random().toString(36).slice(2,9); }
+
+function loadOps(){
+  try{
+    var raw = localStorage.getItem(OPS_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.warn('ops load failed', e); }
+  return null;
+}
+function saveOps(){
+  ops.updatedAt = Date.now();
+  try{ localStorage.setItem(OPS_KEY, JSON.stringify(ops)); }
+  catch(e){ toast('Storage full — export your data'); }
+}
+
+function loadPlanner(){
+  try{
+    var raw = localStorage.getItem(PLANNER_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.warn('planner load failed', e); }
+  return null;
+}
+
+/* ---------- TIME HELPERS ---------- */
+function pad(n){ return String(n).padStart(2,'0'); }
+function toMin(hhmm){
+  if(!hhmm) return 0;
+  var m = String(hhmm).match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+  if(!m) return 0;
+  var h = +m[1], mm = +m[2];
+  if(m[3]){ var ap = m[3].toLowerCase(); if(ap==='pm' && h<12) h+=12; if(ap==='am' && h===12) h=0; }
+  return h*60 + mm;
+}
+function fromMin(min){
+  min = ((Math.round(min)%1440)+1440)%1440;
+  return pad(Math.floor(min/60)) + ':' + pad(min%60);
+}
+function fmt12(hhmm){
+  var t = toMin(hhmm), h = Math.floor(t/60), m = t%60;
+  var ap = h>=12 ? 'PM' : 'AM'; var hh = h%12; if(hh===0) hh=12;
+  return hh + ':' + pad(m) + ' ' + ap;
+}
+function nowMin(){ var d = new Date(); return d.getHours()*60 + d.getMinutes(); }
+function todayISO(){ var d = new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function addDays(iso, n){
+  var p = String(iso||todayISO()).split('-');
+  var d = new Date(+p[0], +p[1]-1, +p[2]);
+  d.setDate(d.getDate() + n);
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
+function prettyDate(iso){
+  if(!iso) return '';
+  var p = String(iso).split('-');
+  var d = new Date(+p[0], +p[1]-1, +p[2]);
+  return d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+}
+function durStr(mins){
+  mins = Math.max(0, Math.round(mins));
+  var h = Math.floor(mins/60), m = mins%60;
+  if(h && m) return h+'h '+m+'m';
+  if(h) return h+'h';
+  return m+'m';
+}
+function clockStr(sec){
+  sec = Math.max(0, Math.floor(sec));
+  var h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  return (h? h+':' : '') + (h? pad(m) : m) + ':' + pad(s);
+}
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+/* ---------- UI PRIMITIVES ---------- */
+var toastT = null;
+function toast(msg){
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ el.classList.remove('show'); }, 2000);
+}
+function haptic(){ if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){} }
+
+/* ---------- TAP HELPERS ----------
+   kv()    static row, no action
+   kvTap() row that opens something — chevron + press state
+   navHref() the maps handoff, shared by every place in the app */
+function kv(label, value){
+  if(!value) return '';
+  return '<div class="kv"><b>' + esc(label) + '</b><span class="grow">' + value + '</span></div>';
+}
+function kvTap(label, value, action){
+  if(!value) return '';
+  return '<button class="kv tap" onclick="' + action + '"><b>' + esc(label) + '</b>' +
+    '<span class="grow">' + value + '</span></button>';
+}
+function navHref(L){
+  if(!L) return '';
+  var q = encodeURIComponent(L.address || L.name);
+  return (L.lat && L.lng) ? ('geo:' + L.lat + ',' + L.lng + '?q=' + q)
+                          : ('https://maps.apple.com/?q=' + q);
+}
+function navTo(locId){
+  var L = locById(locId); if(!L) return;
+  try{ window.open(navHref(L), '_blank'); }
+  catch(e){ toast('Could not open Maps'); }
+}
+function telHref(phone){ return 'tel:' + String(phone||'').replace(/[^\d+]/g,''); }
+
+function openSheet(html){
+  document.getElementById('sheet-body').innerHTML = html;
+  document.getElementById('sheet').classList.add('open');
+  document.getElementById('scrim').classList.add('open');
+}
+function closeSheet(){
+  document.getElementById('sheet').classList.remove('open');
+  document.getElementById('scrim').classList.remove('open');
+}
+
+/* ============================================================
+   DATA MODEL
+   ------------------------------------------------------------
+   ops = {
+     schoolId, schoolTitle, destination, dateStart, days:[{date,label}],
+     segments:[ {id,dayIdx,start,end,type,title,speaker,speakerBio,intro,
+                 av,locationId,personId,notes,status,actualStart,actualEnd,
+                 from,to,mode,buffer} ],
+     people:[ {id,name,role,org,phone,email,relation,
+               consent:{verbal,written,media,archive},
+               stage, device, files, recSec, recStartedAt, topics, notes, recordedOn} ],
+     locations:[ {id,name,address,meetingPoint,parking,access,contact,notes,lat,lng} ],
+     log:[ {id,ts,kind,text} ]
+   }
+   ============================================================ */
+
+function blankOps(){
+  return {
+    version: 1,
+    schoolId: null,
+    schoolTitle: 'Untitled Field School',
+    destination: '',
+    dateStart: todayISO(),
+    days: [{ date: todayISO(), label: 'Day 1' }],
+    segments: [], people: [], locations: [], log: [],
+    createdAt: Date.now(), updatedAt: Date.now()
+  };
+}
+
+/* Map a planner agenda item's type onto a field segment type */
+function mapType(t, title){
+  t = String(t||'').toLowerCase();
+  var s = String(title||'').toLowerCase();
+  if(t==='travel' || /depart|arriv|drive|transfer|airport|shuttle|van/.test(s)) return 'travel';
+  if(/oral history|interview/.test(s)) return 'interview';
+  if(t==='site-visit' || t==='site') return 'site';
+  if(/lunch|dinner|breakfast|meal|break/.test(s)) return 'meal';
+  if(t==='lecture' || t==='workshop' || t==='community' || t==='panel') return 'speaking';
+  return 'speaking';
+}
+
+/* Build a field-ops record from a planner field school */
+function importFromPlanner(fs, contacts){
+  var o = blankOps();
+  o.schoolId    = fs.id;
+  o.schoolTitle = fs.title || 'Field School';
+  o.destination = fs.destination || '';
+  o.dateStart   = fs.dateStart || todayISO();
+
+  var agenda = (fs.agenda || []).slice().sort(function(a,b){
+    return (a.day - b.day) || (toMin(a.time) - toMin(b.time));
+  });
+
+  var maxDay = 1;
+  agenda.forEach(function(a){ if(a.day > maxDay) maxDay = a.day; });
+  if(fs.dateStart && fs.dateEnd){
+    var span = Math.round((new Date(fs.dateEnd) - new Date(fs.dateStart)) / 86400000) + 1;
+    if(span > maxDay && span < 60) maxDay = span;
+  }
+  o.days = [];
+  for(var d=0; d<maxDay; d++){
+    o.days.push({ date: addDays(o.dateStart, d), label: 'Day ' + (d+1) });
+  }
+
+  /* Locations from planner sites */
+  (fs.sites || []).forEach(function(s){
+    o.locations.push({
+      id: 'loc_' + s.id, name: s.name || 'Site', address: s.location || '',
+      meetingPoint: '', parking: '', access: '', contact: '',
+      notes: s.relevance || '', lat: s.lat || null, lng: s.lng || null,
+      kind: s.type || 'site'
+    });
+  });
+
+  /* Segments from agenda, with inferred end times */
+  agenda.forEach(function(a, i){
+    var dayIdx = Math.max(0, (a.day || 1) - 1);
+    var start  = fromMin(toMin(a.time || '09:00'));
+    var next   = agenda[i+1];
+    var end;
+    if(next && (next.day === a.day) && toMin(next.time) > toMin(a.time)){
+      var gap = toMin(next.time) - toMin(a.time);
+      end = fromMin(toMin(start) + Math.min(gap, 180));
+    } else {
+      end = fromMin(toMin(start) + 90);
+    }
+    var type = mapType(a.type, a.title);
+    /* Match a site by fuzzy title overlap */
+    var locId = null;
+    o.locations.forEach(function(L){
+      var key = L.name.split(/[\s&—-]+/).filter(function(w){ return w.length > 4; })[0];
+      if(key && new RegExp(key, 'i').test(a.title || '')) locId = L.id;
+    });
+    o.segments.push({
+      id: 'seg_' + (a.id || uid()), dayIdx: dayIdx, start: start, end: end,
+      type: type, title: a.title || 'Untitled', speaker: a.speaker || '',
+      speakerBio: '', intro: '', av: '', locationId: locId, personId: null,
+      notes: a.desc || '', status: 'pending', actualStart: null, actualEnd: null,
+      from: '', to: '', mode: type === 'travel' ? 'Van' : '', buffer: 0
+    });
+  });
+
+  /* People: contacts tied to this field school become the oral-history roster */
+  (contacts || []).forEach(function(c){
+    if(c.fieldSchool && c.fieldSchool !== fs.id) return;
+    var likely = /community partner|speaker|artist|elder|resident|vendor/i.test(c.role || c.type || '');
+    o.people.push({
+      id: 'per_' + c.id, name: c.name || 'Unnamed', role: c.role || c.type || '',
+      org: c.org || '', phone: c.phone || '', email: c.email || '',
+      relation: c.notes || '',
+      consent: { verbal:false, written:false, media:false, archive:false },
+      stage: likely ? 'Scheduled' : 'Not started',
+      device: '', files: [], recSec: 0, recStartedAt: null,
+      topics: [], notes: '', recordedOn: '', priority: likely
+    });
+  });
+
+  return o;
+}
+
+/* Seed = the Mississippi 2026 itinerary */
+function demoOps(){
+  var o = JSON.parse(JSON.stringify(MS2026));
+  o.createdAt = Date.now(); o.updatedAt = Date.now();
+  return o;
+}
+
+/* ---------- BOOT ---------- */
+function boot(){
+  ops = loadOps();
+  if(!ops){
+    ops = demoOps();
+    saveOps();
+  }
+  /* Land on today if today is one of the field school days */
+  var t = todayISO();
+  var idx = ops.days.findIndex(function(d){ return d.date === t; });
+  activeDayIdx = idx >= 0 ? idx : 0;
+
+  document.getElementById('fs-name').textContent = ops.schoolTitle;
+  document.getElementById('fs-sub').textContent  = (ops.destination || 'Black Ecologies Lab');
+
+  render();
+  startClock();
+}
+
+function startClock(){
+  function upd(){
+    var d = new Date();
+    document.getElementById('clock').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+    if(view === 'now') paintNow();
+    if(recTimer) paintRecTimers();
+  }
+  upd();
+  clearInterval(tick);
+  tick = setInterval(upd, 1000);
+}
+
+/* ============================================================
+   SELECTORS
+   ============================================================ */
+function daySegs(idx){
+  return ops.segments.filter(function(s){ return s.dayIdx === idx; })
+    .sort(function(a,b){ return toMin(a.start) - toMin(b.start); });
+}
+function segById(id){ return ops.segments.find(function(s){ return s.id === id; }); }
+function perById(id){ return ops.people.find(function(p){ return p.id === id; }); }
+function locById(id){ return ops.locations.find(function(l){ return l.id === id; }); }
+
+function todayIdx(){
+  var t = todayISO();
+  var i = ops.days.findIndex(function(d){ return d.date === t; });
+  return i;
+}
+
+/* The segment happening right now, only if today is a field-school day */
+function currentSeg(){
+  var i = todayIdx();
+  if(i < 0) return null;
+  var n = nowMin();
+  return daySegs(i).find(function(s){
+    return toMin(s.start) <= n && n < toMin(s.end) && s.status !== 'done' && s.status !== 'skipped';
+  }) || null;
+}
+function nextSeg(){
+  var i = todayIdx();
+  if(i < 0) return daySegs(activeDayIdx)[0] || null;
+  var n = nowMin();
+  return daySegs(i).find(function(s){
+    return toMin(s.start) > n && s.status !== 'done' && s.status !== 'skipped';
+  }) || null;
+}
+/* Running behind: an earlier segment is still open past its end time */
+function overdueSeg(){
+  var i = todayIdx();
+  if(i < 0) return null;
+  var n = nowMin();
+  return daySegs(i).find(function(s){
+    return toMin(s.end) <= n && s.status !== 'done' && s.status !== 'skipped';
+  }) || null;
+}
+
+function logEvent(kind, text){
+  ops.log.unshift({ id: uid('log'), ts: Date.now(), kind: kind, text: text });
+  if(ops.log.length > 400) ops.log.length = 400;
+}
+
+/* ============================================================
+   QUICK-TAP ACTIONS
+   ============================================================ */
+function startSeg(id){
+  var s = segById(id); if(!s) return;
+  s.status = 'active';
+  s.actualStart = fromMin(nowMin());
+  logEvent('start', 'Started "' + s.title + '" at ' + fmt12(s.actualStart));
+  haptic(); saveOps(); render();
+  toast('Started · ' + fmt12(s.actualStart));
+}
+function doneSeg(id){
+  var s = segById(id); if(!s) return;
+  s.status = 'done';
+  s.actualEnd = fromMin(nowMin());
+  if(!s.actualStart) s.actualStart = s.start;
+  var planned = toMin(s.end) - toMin(s.start);
+  var actual  = toMin(s.actualEnd) - toMin(s.actualStart);
+  var delta   = actual - planned;
+  logEvent('done', 'Completed "' + s.title + '" · ' + durStr(actual) +
+    (Math.abs(delta) >= 5 ? (delta > 0 ? ' (+' + durStr(delta) + ' over)' : ' (' + durStr(-delta) + ' under)') : ' (on time)'));
+  haptic(); saveOps(); render();
+  toast(Math.abs(delta) < 5 ? 'Done · on time' :
+    (delta > 0 ? 'Done · ' + durStr(delta) + ' over' : 'Done · ' + durStr(-delta) + ' early'));
+}
+function skipSeg(id){
+  var s = segById(id); if(!s) return;
+  s.status = 'skipped';
+  logEvent('skip', 'Skipped "' + s.title + '"');
+  haptic(); saveOps(); render(); toast('Marked skipped');
+}
+function reopenSeg(id){
+  var s = segById(id); if(!s) return;
+  s.status = 'pending'; s.actualStart = null; s.actualEnd = null;
+  saveOps(); render(); toast('Reopened');
+}
+/* Push this segment and everything after it on the same day */
+function pushDay(id, mins){
+  var s = segById(id); if(!s) return;
+  var from = toMin(s.start);
+  daySegs(s.dayIdx).forEach(function(x){
+    if(toMin(x.start) >= from && x.status !== 'done'){
+      x.start = fromMin(toMin(x.start) + mins);
+      x.end   = fromMin(toMin(x.end)   + mins);
+    }
+  });
+  logEvent('shift', (mins > 0 ? 'Pushed ' : 'Pulled ') + Math.abs(mins) + 'm from "' + s.title + '" onward');
+  haptic(); saveOps(); render();
+  toast((mins > 0 ? 'Pushed +' : 'Pulled −') + Math.abs(mins) + ' min from here on');
+}
+
+/* ============================================================
+   VIEW ROUTER
+   ============================================================ */
+function go(v){
+  view = v;
+  document.querySelectorAll('.tabbtn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.view === v);
+  });
+  document.getElementById('main').scrollTop = 0;
+  lastNowHtml = '';
+  render();
+}
+function render(){
+  lastNowHtml = '';
+  var m = document.getElementById('main');
+  if(view === 'now')   m.innerHTML = viewNow();
+  if(view === 'day')   m.innerHTML = viewDay();
+  if(view === 'show')  m.innerHTML = viewShow();
+  if(view === 'oral')  m.innerHTML = viewOral();
+  if(view === 'place') m.innerHTML = viewPlace();
+  if(view === 'now')   paintNow();
+}
+
+/* ============================================================
+   VIEW: NOW
+   ============================================================ */
+function viewNow(){
+  var h = '<div id="nowzone"></div>';
+
+  /* Rest of today */
+  var i = todayIdx();
+  var idx = i >= 0 ? i : activeDayIdx;
+  var segs = daySegs(idx);
+  var n = nowMin();
+  var upcoming = i >= 0
+    ? segs.filter(function(s){ return toMin(s.end) > n && s.status !== 'done' && s.status !== 'skipped'; })
+    : segs;
+
+  var doneCt = segs.filter(function(s){ return s.status === 'done'; }).length;
+  h += '<div class="sec-label"><span>Rest of ' + (i >= 0 ? 'today' : esc(ops.days[idx] ? ops.days[idx].label : 'day')) + '</span>' +
+       '<span class="xs">' + doneCt + ' / ' + segs.length + ' complete</span></div>';
+
+  if(!upcoming.length){
+    h += '<div class="card"><div class="muted sm">Nothing left on the schedule. ' +
+         '<a class="link" href="#" onclick="go(\'day\');return false">Open the full day →</a></div></div>';
+  } else {
+    h += '<div class="tl">' + upcoming.slice(0,6).map(function(s){ return tlItem(s, false); }).join('') + '</div>';
+    if(upcoming.length > 6){
+      h += '<button class="btn full ghost" onclick="go(\'day\')">See all ' + segs.length + ' blocks →</button>';
+    }
+  }
+
+  /* Consent gaps — the thing that bites you later */
+  var gaps = ops.people.filter(function(p){
+    return (p.stage === 'Recorded' || p.stage === 'In progress' || p.stage === 'Transcribed') &&
+           (!p.consent.written || !p.consent.archive);
+  });
+  if(gaps.length){
+    h += '<div class="sec-label">Consent needs closing</div>';
+    gaps.forEach(function(p){
+      var miss = [];
+      if(!p.consent.written) miss.push('written release');
+      if(!p.consent.archive) miss.push('archive permission');
+      h += '<div class="card tight" onclick="openPerson(\'' + p.id + '\')">' +
+        '<div class="spread"><div class="grow"><div class="seg-title" style="font-size:1.05rem">' + esc(p.name) + '</div>' +
+        '<div class="xs muted" style="margin-top:3px">Recorded — missing ' + miss.join(' + ') + '</div></div>' +
+        '<span class="chip bad">Open</span></div></div>';
+    });
+  }
+
+  /* Day log */
+  if(ops.log.length){
+    h += '<div class="sec-label">Field log</div><div class="card">';
+    h += ops.log.slice(0,7).map(function(L){
+      var d = new Date(L.ts);
+      return '<div class="kv"><b>' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + '</b><span class="grow">' + esc(L.text) + '</span></div>';
+    }).join('');
+    h += '</div>';
+  }
+  return h;
+}
+
+/* The live card, repainted every second without rebuilding the page.
+   Everything here is minute-granularity except the recording clock, which
+   paintRecTimers updates in place — so we diff the markup and only touch
+   the DOM when it actually changed. Without this the question list would
+   be rebuilt under the director's finger once a second. */
+var lastNowHtml = '';
+function paintNow(){
+  var zone = document.getElementById('nowzone');
+  if(!zone) return;
+  var cur = currentSeg(), late = overdueSeg(), nxt = nextSeg();
+  var n = nowMin(), h = '';
+
+  if(cur){
+    var st = toMin(cur.start), en = toMin(cur.end);
+    var left = en - n, elapsed = n - st, total = Math.max(1, en - st);
+    var pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+    var loc = locById(cur.locationId);
+    h = '<div id="nowcard" class="' + (left < 0 ? 'late' : '') + '">' +
+      '<div class="now-kicker"><span class="pulse"></span>' +
+        (cur.status === 'active' ? 'In progress' : 'Happening now') + ' · ' + SEG_TYPES[cur.type].label + '</div>' +
+      '<div class="now-title">' + esc(cur.title) + '</div>' +
+      (cur.speaker ? '<div class="now-meta">' + SEG_TYPES[cur.type].ic + ' ' + esc(cur.speaker) + '</div>' : '') +
+      (loc ? '<button class="kv tap" style="border-bottom:0;margin-top:8px" ' +
+             'onclick="openLoc(\'' + loc.id + '\')"><b>Where</b><span class="grow">' +
+             esc(loc.name) + '</span></button>' : '') +
+      (cur.personId ? '<button class="kv tap" style="border-bottom:0" ' +
+             'onclick="openPerson(\'' + cur.personId + '\')"><b>Narrator</b><span class="grow">' +
+             esc((perById(cur.personId)||{}).name || '') + '</span></button>' : '') +
+      '<div class="now-time">' + fmt12(cur.start) + ' – ' + fmt12(cur.end) + ' · ' + durStr(total) + '</div>' +
+      '<div class="countdown ' + (left < 0 ? 'over' : '') + '">' +
+        (left < 0 ? '+' + durStr(-left) : durStr(left)) +
+        '<small>' + (left < 0 ? 'over time' : 'remaining') + '</small></div>' +
+      '<div id="progressbar"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="btnrow">' +
+        (cur.status === 'active'
+          ? '<button class="btn good" onclick="doneSeg(\'' + cur.id + '\')">✓ Complete</button>'
+          : '<button class="btn ochre" onclick="startSeg(\'' + cur.id + '\')">▶ Start</button>') +
+        '<button class="btn" onclick="openSeg(\'' + cur.id + '\')">Details</button>' +
+      '</div>' +
+      '<div class="btnrow three">' +
+        '<button class="btn sm ghost" onclick="pushDay(\'' + cur.id + '\',10)">+10m all</button>' +
+        '<button class="btn sm ghost" onclick="pushDay(\'' + cur.id + '\',30)">+30m all</button>' +
+        (loc ? '<button class="btn sm ghost" onclick="navTo(\'' + loc.id + '\')">⌖ Navigate</button>'
+             : '<button class="btn sm ghost" onclick="skipSeg(\'' + cur.id + '\')">Skip</button>') +
+      '</div>' +
+      (cur.type === 'interview' && cur.personId ? recStrip(cur.personId) : '') +
+    '</div>' +
+    (cur.type === 'interview' && cur.personId ? nowQuestions(cur.personId) : '');
+  } else if(late){
+    var over = n - toMin(late.end);
+    h = '<div id="nowcard" class="late">' +
+      '<div class="now-kicker"><span class="pulse"></span>Running behind</div>' +
+      '<div class="now-title">' + esc(late.title) + '</div>' +
+      '<div class="now-time">Was ' + fmt12(late.start) + ' – ' + fmt12(late.end) + '</div>' +
+      '<div class="countdown over">+' + durStr(over) + '<small>past its end</small></div>' +
+      '<div class="btnrow">' +
+        '<button class="btn good" onclick="doneSeg(\'' + late.id + '\')">✓ Complete</button>' +
+        '<button class="btn ghost" onclick="skipSeg(\'' + late.id + '\')">Didn\'t happen</button>' +
+      '</div>' +
+      '<div class="btnrow"><button class="btn sm ghost" onclick="pushDay(\'' + late.id + '\',' + (Math.ceil(over/15)*15) + ')">' +
+        'Shift the rest of the day +' + durStr(Math.ceil(over/15)*15) + '</button>' +
+        '<button class="btn sm ghost" onclick="openSeg(\'' + late.id + '\')">Details</button></div>' +
+    '</div>';
+  } else {
+    var gapTxt = nxt ? durStr(toMin(nxt.start) - n) + ' until next' : 'Schedule complete';
+    h = '<div id="nowcard" class="idle">' +
+      '<div class="now-kicker">Open time</div>' +
+      '<div class="now-title">' + (nxt ? 'Nothing scheduled right now' : 'Day complete') + '</div>' +
+      '<div class="now-time">' + esc(gapTxt) + '</div>' +
+      (nxt ? '<div class="btnrow"><button class="btn ochre" onclick="startSeg(\'' + nxt.id + '\')">▶ Start next early</button>' +
+             '<button class="btn" onclick="openSeg(\'' + nxt.id + '\')">Details</button></div>' : '') +
+    '</div>';
+  }
+
+  /* Next up preview */
+  if(nxt && (!cur || nxt.id !== cur.id)){
+    var nloc = locById(nxt.locationId);
+    h += '<div class="sec-label">Next up</div>' +
+      '<div class="card tight" onclick="openSeg(\'' + nxt.id + '\')">' +
+        '<div class="row"><div class="timecol">' + fmt12(nxt.start).replace(' ','') +
+        '<small>' + durStr(toMin(nxt.end) - toMin(nxt.start)) + '</small></div>' +
+        '<div class="grow"><div class="seg-title" style="font-size:1.1rem">' + esc(nxt.title) + '</div>' +
+        '<div class="xs muted trunc" style="margin-top:3px">' +
+          (nxt.speaker ? esc(nxt.speaker) + ' · ' : '') + (nloc ? esc(nloc.name) : SEG_TYPES[nxt.type].label) +
+        '</div></div>' +
+        '<span class="chip ' + nxt.type + '">' + SEG_TYPES[nxt.type].label + '</span></div>' +
+      '</div>';
+  }
+  if(h === lastNowHtml) return;
+  lastNowHtml = h;
+  zone.innerHTML = h;
+}
+
+/* Live question guide under the NOW card during an interview block.
+   Unasked questions float to the top so the remaining ground is obvious. */
+function nowQuestions(pid){
+  var p = perById(pid); if(!p) return '';
+  if(!p.questions || !p.questions.length){
+    return '<div class="sec-label">Question guide</div>' +
+      '<div class="qnone">No question set for ' + esc(p.name) + '. ' +
+      '<a class="link" href="#" onclick="openBank(\'' + p.id + '\');return false">Open the shared bank →</a></div>';
+  }
+  var n = askedCount(p), t = p.questions.length;
+  var open = p.questions.filter(function(q){ return !q.asked; });
+  var done = p.questions.filter(function(q){ return q.asked; });
+  var h = '<div class="sec-label"><span>Asking ' + esc(p.name) + '</span>' +
+    '<span class="qcount ' + (n === t ? 'done' : '') + '" data-qc="' + p.id + '">' +
+    n + ' / ' + t + ' asked</span></div>';
+  if(p.focus) h += '<div class="qfocus" style="margin:-4px 2px 10px">Focus · ' + esc(p.focus) + '</div>';
+  h += '<div class="qwrap">' + open.concat(done).map(function(q){ return qRow(p.id, q); }).join('') + '</div>';
+  h += '<div class="btnrow" style="margin-top:10px">' +
+    '<button class="btn sm ghost" onclick="openBank(\'' + p.id + '\')">Shared bank</button>' +
+    '<button class="btn sm ghost" onclick="openPerson(\'' + p.id + '\')">Consent &amp; log</button></div>';
+  return h;
+}
+
+/* Compact recorder strip embedded in the NOW card for interview blocks */
+function recStrip(pid){
+  var p = perById(pid); if(!p) return '';
+  var live = !!p.recStartedAt;
+  var sec = p.recSec + (live ? Math.floor((Date.now() - p.recStartedAt)/1000) : 0);
+  return '<div class="rec ' + (live ? 'live' : '') + '" data-rec="' + p.id + '">' +
+    '<span class="recdot"></span>' +
+    '<span class="rt">' + clockStr(sec) + '</span>' +
+    '<button class="btn sm ' + (live ? 'danger' : 'ochre') + '" onclick="toggleRec(\'' + p.id + '\')">' +
+      (live ? '■ Stop' : '● Record') + '</button>' +
+    '<button class="btn sm ghost" onclick="openPerson(\'' + p.id + '\')">Log</button>' +
+  '</div>';
+}
+
+/* One timeline row */
+function tlItem(s, showDay){
+  var cls = s.status === 'done' ? 'done' : (currentSeg() && currentSeg().id === s.id ? 'now' : '');
+  var loc = locById(s.locationId);
+  var per = perById(s.personId);
+  var sub = [];
+  if(s.speaker) sub.push(esc(s.speaker));
+  if(per) sub.push(esc(per.name));
+  if(loc) sub.push('⌖ ' + esc(loc.name));
+  if(s.type === 'travel' && s.to) sub.push('→ ' + esc(s.to));
+  return '<div class="tlitem ' + cls + '">' +
+    '<div class="card tight" onclick="openSeg(\'' + s.id + '\')">' +
+      '<div class="row">' +
+        '<div class="timecol">' + fmt12(s.start).replace(' ','') +
+          '<small>' + durStr(toMin(s.end) - toMin(s.start)) + '</small></div>' +
+        '<div class="grow">' +
+          '<div class="seg-title">' + esc(s.title) + '</div>' +
+          (sub.length ? '<div class="xs muted trunc" style="margin-top:3px">' + sub.join(' · ') + '</div>' : '') +
+        '</div>' +
+        '<span class="chip ' + s.type + '">' + SEG_TYPES[s.type].ic + '</span>' +
+      '</div>' +
+    '</div></div>';
+}
+
+/* ============================================================
+   VIEW: DAY  (full timeline, all blocks, day switcher)
+   ============================================================ */
+function dayPicker(){
+  return '<div class="segctl">' + ops.days.map(function(d, i){
+    var isToday = d.date === todayISO();
+    return '<button class="' + (i === activeDayIdx ? 'active' : '') + '" onclick="setDay(' + i + ')">' +
+      esc(d.label) + (isToday ? ' ·' : '') + '<span class="xs muted" style="display:block;font-size:.62rem">' +
+      prettyDate(d.date) + '</span></button>';
+  }).join('') + '</div>';
+}
+function setDay(i){ activeDayIdx = i; render(); }
+
+function viewDay(){
+  var segs = daySegs(activeDayIdx);
+  var h = dayPicker();
+
+  var doneCt = segs.filter(function(s){ return s.status === 'done'; }).length;
+  var firstT = segs.length ? toMin(segs[0].start) : 0;
+  var lastT  = segs.length ? Math.max.apply(null, segs.map(function(s){ return toMin(s.end); })) : 0;
+  var travelMin = segs.filter(function(s){ return s.type === 'travel'; })
+    .reduce(function(a, s){ return a + (toMin(s.end) - toMin(s.start)); }, 0);
+  var ivCt = segs.filter(function(s){ return s.type === 'interview'; }).length;
+
+  h += '<div class="card"><div class="row wrap" style="gap:16px">' +
+    statBlock(segs.length ? fmt12(fromMin(firstT)) + ' – ' + fmt12(fromMin(lastT)) : '—', 'Field hours') +
+    statBlock(doneCt + '/' + segs.length, 'Complete') +
+    statBlock(durStr(travelMin), 'In transit') +
+    statBlock(String(ivCt), 'Interviews') +
+    '</div></div>';
+
+  if(!segs.length){
+    h += '<div class="empty"><div class="big">◌</div><div>No blocks on this day yet.</div>' +
+      '<button class="btn ochre" style="margin-top:16px" onclick="openSeg(null)">+ Add a block</button></div>';
+    return h;
+  }
+
+  h += '<div class="tl">' + segs.map(function(s, i){
+    var gapHtml = '';
+    if(i > 0){
+      var gap = toMin(s.start) - toMin(segs[i-1].end);
+      if(gap >= 20) gapHtml = '<div class="xs muted" style="margin:-4px 0 10px 4px">↕ ' + durStr(gap) + ' open</div>';
+      if(gap < 0)   gapHtml = '<div class="xs" style="color:#e69a9a;margin:-4px 0 10px 4px">⚠ overlaps previous by ' + durStr(-gap) + '</div>';
+    }
+    return gapHtml + tlItem(s, false);
+  }).join('') + '</div>';
+
+  h += '<button class="btn full ochre" onclick="openSeg(null)">+ Add a block to ' + esc(ops.days[activeDayIdx].label) + '</button>';
+  return h;
+}
+function statBlock(v, l){
+  return '<div style="flex:1;min-width:74px"><div style="font-family:var(--serif);font-size:1.3rem;color:var(--white);line-height:1.1">' +
+    esc(v) + '</div><div class="xs muted" style="letter-spacing:.08em;text-transform:uppercase;margin-top:3px">' + esc(l) + '</div></div>';
+}
+
+/* ============================================================
+   VIEW: RUN OF SHOW  (speaking segments across the school)
+   ============================================================ */
+function viewShow(){
+  var h = dayPicker();
+  var segs = daySegs(activeDayIdx).filter(function(s){ return s.type === 'speaking' || s.type === 'site'; });
+
+  h += '<div class="sec-label"><span>Run of show</span><span class="xs">' + segs.length + ' segments</span></div>';
+  if(!segs.length){
+    h += '<div class="empty"><div class="big">◈</div><div>No speaking segments on this day.</div></div>';
+    return h;
+  }
+
+  segs.forEach(function(s){
+    var planned = toMin(s.end) - toMin(s.start);
+    var actual = (s.actualStart && s.actualEnd) ? toMin(s.actualEnd) - toMin(s.actualStart) : null;
+    var delta = actual != null ? actual - planned : null;
+    var loc = locById(s.locationId);
+    h += '<div class="card">' +
+      '<div class="spread" style="align-items:flex-start">' +
+        '<div class="grow"><div class="xs muted">' + fmt12(s.start) + ' – ' + fmt12(s.end) + ' · ' + durStr(planned) + ' allotted</div>' +
+        '<div class="seg-title" style="font-size:1.25rem;margin-top:4px">' + esc(s.title) + '</div></div>' +
+        '<span class="chip ' + s.type + '">' + SEG_TYPES[s.type].label + '</span>' +
+      '</div>';
+
+    var per = perById(s.personId);
+    if(per) h += kvTap('Narrator', esc(per.name), 'openPerson(\'' + per.id + '\')');
+    else if(s.speaker) h += kv('Speaker', esc(s.speaker));
+    if(s.speakerBio) h += kv('Bio', esc(s.speakerBio));
+    if(s.intro) h += kv('Intro copy', esc(s.intro));
+    if(s.av) h += kv('AV / mic', esc(s.av));
+    if(loc) h += kvTap('Where', esc(loc.name) + (loc.meetingPoint ? ' — ' + esc(loc.meetingPoint) : ''),
+                       'openLoc(\'' + loc.id + '\')');
+    if(actual != null){
+      h += '<div class="kv"><b>Actual</b><span class="grow">' + durStr(actual) + ' ' +
+        '<span class="chip ' + (Math.abs(delta) < 5 ? 'ok' : (delta > 0 ? 'warn' : 'ok')) + '">' +
+        (Math.abs(delta) < 5 ? 'on time' : (delta > 0 ? '+' + durStr(delta) : durStr(-delta) + ' under')) +
+        '</span></span></div>';
+    }
+
+    h += '<div class="linkrow">' +
+      (s.status === 'done'
+        ? '<button class="btn ghost" onclick="reopenSeg(\'' + s.id + '\')">↺ Reopen</button>'
+        : (s.status === 'active'
+          ? '<button class="btn good" onclick="doneSeg(\'' + s.id + '\')">✓ Wrap segment</button>'
+          : '<button class="btn ochre" onclick="startSeg(\'' + s.id + '\')">▶ Start segment</button>')) +
+      (loc ? '<button class="btn" onclick="navTo(\'' + loc.id + '\')">⌖ Navigate</button>' : '') +
+      '<button class="btn ghost" onclick="openSeg(\'' + s.id + '\')">Edit</button>' +
+    '</div></div>';
+  });
+  return h;
+}
+
+/* ============================================================
+   VIEW: ORAL HISTORY
+   ============================================================ */
+function stageChip(stage){
+  var cls = stage === 'Recorded' || stage === 'Transcribed' || stage === 'Archived' ? 'ok'
+          : (stage === 'In progress' ? 'warn' : '');
+  return '<span class="chip ' + cls + '">' + esc(stage) + '</span>';
+}
+function consentScore(p){
+  var k = ['verbal','written','media','archive'];
+  return k.filter(function(x){ return p.consent[x]; }).length;
+}
+
+function viewOral(){
+  var people = ops.people.slice().sort(function(a,b){
+    var rank = { 'In progress':0, 'Scheduled':1, 'Recorded':2, 'Transcribed':3, 'Archived':4, 'Not started':5 };
+    return (rank[a.stage] - rank[b.stage]) || a.name.localeCompare(b.name);
+  });
+  var totalSec = people.reduce(function(a, p){ return a + (p.recSec || 0); }, 0);
+  var totQ  = people.reduce(function(a, p){ return a + ((p.questions || []).length); }, 0);
+  var askQ  = people.reduce(function(a, p){ return a + askedCount(p); }, 0);
+
+  var h = '<div class="card"><div class="row wrap" style="gap:16px">' +
+    statBlock(String(people.length), 'On roster') +
+    statBlock(String(people.filter(function(p){ return p.stage === 'Recorded' || p.stage === 'Transcribed' || p.stage === 'Archived'; }).length), 'Recorded') +
+    statBlock(askQ + '/' + totQ, 'Questions asked') +
+    statBlock(String(people.filter(function(p){ return !p.consent.written && p.recSec > 0; }).length), 'Release gaps') +
+    '</div></div>';
+
+  if(ops.sharedBank){
+    h += '<button class="btn full ghost" style="margin-bottom:4px" onclick="openBank(null)">' +
+      '◍ Shared land &amp; water question bank</button>';
+  }
+
+  h += '<div class="sec-label"><span>Interview roster</span>' +
+       '<button class="btn sm ghost" onclick="openPerson(null)">+ Person</button></div>';
+
+  if(!people.length){
+    h += '<div class="empty"><div class="big">◍</div><div>No one on the roster yet.</div>' +
+      '<button class="btn ochre" style="margin-top:16px" onclick="openPerson(null)">+ Add a narrator</button></div>';
+    return h;
+  }
+
+  people.forEach(function(p){
+    var live = !!p.recStartedAt;
+    var sec = p.recSec + (live ? Math.floor((Date.now() - p.recStartedAt)/1000) : 0);
+    var cs = consentScore(p);
+    h += '<div class="card">' +
+      '<div class="spread" style="align-items:flex-start" onclick="openPerson(\'' + p.id + '\')">' +
+        '<div class="grow">' +
+          '<div class="seg-title" style="font-size:1.25rem">' + esc(p.name) + '</div>' +
+          '<div class="xs muted" style="margin-top:3px">' + esc([p.role, p.org].filter(Boolean).join(' · ')) + '</div>' +
+        '</div>' + stageChip(p.stage) +
+      '</div>';
+
+    if(p.relation) h += '<div class="sm dim" style="margin-top:9px">' + esc(p.relation) + '</div>';
+    if(p.topics && p.topics.length){
+      h += '<div class="row wrap" style="margin-top:9px;gap:6px">' +
+        p.topics.map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>';
+    }
+
+    /* Consent toggles — one tap each */
+    h += '<div class="consent">' +
+      ctog(p.id, 'verbal',  'Verbal consent') +
+      ctog(p.id, 'written', 'Written release') +
+      ctog(p.id, 'media',   'Photo / video') +
+      ctog(p.id, 'archive', 'Archive + reuse') +
+    '</div>';
+    if(cs === 0){
+      h += '<div class="xs" style="color:#e69a9a;margin-top:8px">⚠ No consent recorded — do not record.</div>';
+    } else if(p.recSec > 0 && !p.consent.written){
+      h += '<div class="xs" style="color:var(--ochre-lite);margin-top:8px">⚠ Tape exists without a written release.</div>';
+    }
+
+    /* Recorder */
+    h += '<div class="rec ' + (live ? 'live' : '') + '" data-rec="' + p.id + '">' +
+      '<span class="recdot"></span><span class="rt">' + clockStr(sec) + '</span>' +
+      '<button class="btn sm ' + (live ? 'danger' : 'ochre') + '" onclick="toggleRec(\'' + p.id + '\')">' +
+        (live ? '■ Stop' : '● Record') + '</button>' +
+      '<button class="btn sm ghost" onclick="openPerson(\'' + p.id + '\')">Details</button>' +
+    '</div>';
+
+    if(p.device) h += kv('Rig', esc(p.device));
+    if(p.files && p.files.length) h += kv('Files', p.files.map(esc).join('<br>'));
+    if(p.phone) h += kvTap('Phone', esc(p.phone), 'location.href=\'' + telHref(p.phone) + '\'');
+    if(p.email) h += kvTap('Email', esc(p.email), 'location.href=\'mailto:' + esc(p.email) + '\'');
+
+    /* Where and when this person is scheduled — tap through to the block */
+    var mySegs = ops.segments.filter(function(s){ return s.personId === p.id; })
+      .sort(function(a,b){ return (a.dayIdx - b.dayIdx) || (toMin(a.start) - toMin(b.start)); });
+    mySegs.forEach(function(s){
+      var L = locById(s.locationId);
+      h += kvTap('Scheduled',
+        esc((ops.days[s.dayIdx] || {}).label || 'Day') + ' · ' + fmt12(s.start) +
+        (L ? '<br><span class="xs muted">' + esc(L.name) + '</span>' : ''),
+        'openSeg(\'' + s.id + '\')');
+    });
+    if(p.notes) h += kv('Notes', esc(p.notes));
+
+    h += questionGuide(p, false);
+    h += '</div>';
+  });
+  return h;
+}
+
+function ctog(pid, key, label){
+  var p = perById(pid);
+  return '<button class="ctog ' + (p.consent[key] ? 'on' : '') + '" onclick="toggleConsent(\'' + pid + '\',\'' + key + '\')">' +
+    '<span class="box">✓</span><span>' + esc(label) + '</span></button>';
+}
+function toggleConsent(pid, key){
+  var p = perById(pid); if(!p) return;
+  p.consent[key] = !p.consent[key];
+  logEvent('consent', (p.consent[key] ? 'Recorded' : 'Cleared') + ' ' + key + ' consent — ' + p.name);
+  haptic(); saveOps(); render();
+  toast(p.name + ' · ' + key + ' ' + (p.consent[key] ? 'granted' : 'cleared'));
+}
+
+/* ---------- RECORDING TIMER ---------- */
+function toggleRec(pid){
+  var p = perById(pid); if(!p) return;
+  if(p.recStartedAt){
+    p.recSec += Math.floor((Date.now() - p.recStartedAt)/1000);
+    p.recStartedAt = null;
+    if(p.stage === 'Not started' || p.stage === 'Scheduled' || p.stage === 'In progress') p.stage = 'Recorded';
+    p.recordedOn = todayISO();
+    logEvent('rec', 'Stopped recording ' + p.name + ' — running total ' + clockStr(p.recSec));
+    toast('Stopped · ' + clockStr(p.recSec) + ' logged');
+  } else {
+    if(consentScore(p) === 0){ toast('No consent on file — capture it first'); return; }
+    p.recStartedAt = Date.now();
+    p.stage = 'In progress';
+    logEvent('rec', 'Started recording ' + p.name);
+    toast('Recording ' + p.name);
+  }
+  haptic(); saveOps(); render();
+  updateRecTimer();
+}
+function updateRecTimer(){
+  var any = ops.people.some(function(p){ return !!p.recStartedAt; });
+  recTimer = any;
+}
+function paintRecTimers(){
+  document.querySelectorAll('[data-rec]').forEach(function(el){
+    var p = perById(el.dataset.rec); if(!p) return;
+    var live = !!p.recStartedAt;
+    var sec = p.recSec + (live ? Math.floor((Date.now() - p.recStartedAt)/1000) : 0);
+    var rt = el.querySelector('.rt');
+    if(rt) rt.textContent = clockStr(sec);
+  });
+}
+
+/* ============================================================
+   VIEW: PLACES
+   ============================================================ */
+function viewPlace(){
+  var h = '<div class="sec-label"><span>Locations</span>' +
+    '<button class="btn sm ghost" onclick="openLoc(null)">+ Place</button></div>';
+
+  if(!ops.locations.length){
+    h += '<div class="empty"><div class="big">⌖</div><div>No locations saved.</div>' +
+      '<button class="btn ochre" style="margin-top:16px" onclick="openLoc(null)">+ Add a place</button></div>';
+    return h;
+  }
+
+  ops.locations.forEach(function(L){
+    var used = ops.segments.filter(function(s){ return s.locationId === L.id; });
+    var q = encodeURIComponent(L.address || L.name);
+    var mapHref = (L.lat && L.lng) ? ('geo:' + L.lat + ',' + L.lng + '?q=' + q) : ('https://maps.apple.com/?q=' + q);
+    h += '<div class="card">' +
+      '<div class="spread" style="align-items:flex-start">' +
+        '<div class="grow"><div class="seg-title" style="font-size:1.25rem">' + esc(L.name) + '</div>' +
+        (L.address ? '<div class="xs muted" style="margin-top:3px">' + esc(L.address) + '</div>' : '') + '</div>' +
+        (L.kind ? '<span class="chip">' + esc(L.kind) + '</span>' : '') +
+      '</div>';
+
+    if(L.address)      h += kvTap('Address', esc(L.address), 'navTo(\'' + L.id + '\')');
+    if(L.meetingPoint) h += kv('Meet at', esc(L.meetingPoint));
+    if(L.parking)      h += kv('Parking', esc(L.parking));
+    if(L.access)       h += kv('Access', esc(L.access));
+    if(L.contact){
+      var ph = (L.contact.match(/[\d][\d\s().+-]{7,}/) || [''])[0].trim();
+      h += ph ? kvTap('On site', esc(L.contact), 'location.href=\'' + telHref(ph) + '\'')
+              : kv('On site', esc(L.contact));
+    }
+    if(L.notes)        h += kv('Notes', esc(L.notes));
+
+    used.forEach(function(s){
+      h += kvTap('Scheduled',
+        esc((ops.days[s.dayIdx] || {}).label || 'Day') + ' · ' + fmt12(s.start) +
+        '<br><span class="xs muted">' + esc(s.title) + '</span>',
+        'openSeg(\'' + s.id + '\')');
+    });
+
+    h += '<div class="linkrow">' +
+      '<button class="btn ochre" onclick="navTo(\'' + L.id + '\')">⌖ Navigate</button>' +
+      '<button class="btn ghost" onclick="openLoc(\'' + L.id + '\')">Edit</button>' +
+    '</div></div>';
+  });
+
+  /* Travel legs summary — the documentarian's drive plan */
+  var legs = ops.segments.filter(function(s){ return s.type === 'travel'; })
+    .sort(function(a,b){ return (a.dayIdx - b.dayIdx) || (toMin(a.start) - toMin(b.start)); });
+  if(legs.length){
+    h += '<div class="sec-label">Travel legs</div>';
+    legs.forEach(function(s){
+      var mins = toMin(s.end) - toMin(s.start);
+      var dest = locById(s.locationId);
+      h += '<div class="card tight tap">' +
+        '<div class="row" onclick="openSeg(\'' + s.id + '\')"><div class="timecol">' + fmt12(s.start).replace(' ','') +
+        '<small>' + durStr(mins) + '</small></div>' +
+        '<div class="grow"><div class="sm" style="color:var(--white)">' + esc(s.from || '—') + ' → ' + esc(s.to || '—') + '</div>' +
+        '<div class="xs muted" style="margin-top:3px">' +
+          esc(ops.days[s.dayIdx] ? ops.days[s.dayIdx].label : '') +
+          (s.mode ? ' · ' + esc(s.mode) : '') + (s.buffer ? ' · ' + s.buffer + 'm buffer' : '') +
+        '</div></div>' +
+        '<span class="chip travel">→</span></div>' +
+        (dest ? '<div class="linkrow"><button class="btn sm ochre" onclick="navTo(\'' + dest.id + '\')">' +
+                '⌖ Navigate to ' + esc(dest.name.split(/[—·(]/)[0].trim().slice(0,26)) + '</button></div>' : '') +
+        '</div>';
+    });
+  }
+  return h;
+}
+
+/* ============================================================
+   QUESTION GUIDE
+   ------------------------------------------------------------
+   Questions come from "Interview Guide for Black Ecologies:
+   Mississippi 2026 Field School & Documentary". Each question
+   carries an `asked` flag the director taps during the session,
+   so what's left to cover is visible while the tape runs.
+   ============================================================ */
+function askedCount(p){
+  if(!p.questions || !p.questions.length) return 0;
+  return p.questions.filter(function(q){ return q.asked; }).length;
+}
+function toggleAsked(pid, qid){
+  var p = perById(pid); if(!p || !p.questions) return;
+  var q = p.questions.find(function(x){ return x.id === qid; });
+  if(!q) return;
+  q.asked = !q.asked;
+  haptic(); saveOps();
+  var el = document.querySelector('[data-q="' + qid + '"]');
+  if(el){
+    el.classList.toggle('asked', q.asked);
+    document.querySelectorAll('[data-qc="' + pid + '"]').forEach(function(c){
+      var n = askedCount(p), t = p.questions.length;
+      c.textContent = n + ' / ' + t + ' asked';
+      c.classList.toggle('done', n === t);
+    });
+  } else {
+    render();
+  }
+}
+function resetAsked(pid){
+  var p = perById(pid); if(!p || !p.questions) return;
+  p.questions.forEach(function(q){ q.asked = false; });
+  saveOps(); render(); toast('Question guide reset');
+}
+
+/* One question row */
+function qRow(pid, q){
+  var h = '<button class="q ' + (q.asked ? 'asked' : '') + '" data-q="' + q.id + '" ' +
+    'onclick="toggleAsked(\'' + pid + '\',\'' + q.id + '\')">' +
+    '<span class="qbox">✓</span><span class="grow">' +
+      '<span class="qlabel">' + esc(q.label) + '</span>' +
+      '<span class="qtext">' + esc(q.text) + '</span>' +
+    '</span></button>';
+  if(q.sub && q.sub.length){
+    h += '<div class="qsub">' + q.sub.map(function(s){ return '<div>' + esc(s) + '</div>'; }).join('') + '</div>';
+  }
+  return h;
+}
+
+/* The full guide block for one person */
+function questionGuide(p, compact){
+  var h = '';
+  if(!p.questions || !p.questions.length){
+    h += '<div class="qhead"><span class="lbl">Question guide</span></div>' +
+      '<div class="qnone">No question set for ' + esc(p.name) + ' in the interview guide. ' +
+      'Use the shared land &amp; water bank below, or write one before the day.</div>' +
+      '<button class="btn full ghost" style="margin-top:9px" onclick="openBank(\'' + p.id + '\')">' +
+      'Open shared question bank</button>';
+    return h;
+  }
+  var n = askedCount(p), t = p.questions.length;
+  h += '<div class="qhead"><span class="lbl">Question guide</span>' +
+    '<span class="qcount ' + (n === t ? 'done' : '') + '" data-qc="' + p.id + '">' +
+    n + ' / ' + t + ' asked</span></div>';
+  if(p.focus) h += '<div class="qfocus" style="margin:0 0 11px">Focus · ' + esc(p.focus) + '</div>';
+  h += '<div class="qwrap">' + p.questions.map(function(q){ return qRow(p.id, q); }).join('') + '</div>';
+  if(!compact){
+    h += '<div class="btnrow" style="margin-top:11px">' +
+      '<button class="btn sm ghost" onclick="openBank(\'' + p.id + '\')">Shared bank</button>' +
+      '<button class="btn sm ghost" onclick="resetAsked(\'' + p.id + '\')">Reset ticks</button></div>';
+  }
+  return h;
+}
+
+/* Shared land & water bank, opened from any narrator */
+function openBank(pid){
+  var b = ops.sharedBank;
+  if(!b){ toast('No shared bank in this dataset'); return; }
+  var h = '<div class="spread" style="margin-bottom:14px">' +
+    '<h2 style="font-size:1.4rem">' + esc(b.title) + '</h2>' +
+    '<button class="icon-btn" onclick="closeSheet()">✕</button></div>';
+  h += '<div class="qsrc">' + esc(b.source) + '</div>';
+  if(pid){
+    var p = perById(pid);
+    if(p) h += '<div class="xs muted" style="margin-bottom:14px">Open alongside ' + esc(p.name) +
+      '. These are reference prompts — ticks are not tracked here.</div>';
+  }
+  b.groups.forEach(function(g){
+    h += '<div class="qgroup">' + esc(g.name) + '</div><div class="qwrap">';
+    h += g.qs.map(function(q){
+      return '<div class="q" style="border-left-color:var(--border)"><span class="grow">' +
+        '<span class="qtext" style="font-size:.9rem">' + esc(q) + '</span></span></div>';
+    }).join('');
+    h += '</div>';
+  });
+  openSheet(h);
+}
+
+/* ============================================================
+   EDITORS  (bottom sheets)
+   ============================================================ */
+function field(label, id, val, ph, type){
+  return '<div style="margin-bottom:12px"><div class="xs muted" style="letter-spacing:.1em;' +
+    'text-transform:uppercase;margin-bottom:6px">' + esc(label) + '</div>' +
+    '<input id="' + id + '" type="' + (type || 'text') + '" value="' + esc(val || '') + '" placeholder="' + esc(ph || '') + '"></div>';
+}
+function area(label, id, val, ph){
+  return '<div style="margin-bottom:12px"><div class="xs muted" style="letter-spacing:.1em;' +
+    'text-transform:uppercase;margin-bottom:6px">' + esc(label) + '</div>' +
+    '<textarea id="' + id + '" class="notefield" placeholder="' + esc(ph || '') + '">' + esc(val || '') + '</textarea></div>';
+}
+function select(label, id, val, opts){
+  return '<div style="margin-bottom:12px"><div class="xs muted" style="letter-spacing:.1em;' +
+    'text-transform:uppercase;margin-bottom:6px">' + esc(label) + '</div>' +
+    '<select id="' + id + '">' + opts.map(function(o){
+      var v = typeof o === 'string' ? o : o.v, t = typeof o === 'string' ? o : o.t;
+      return '<option value="' + esc(v) + '"' + (String(v) === String(val) ? ' selected' : '') + '>' + esc(t) + '</option>';
+    }).join('') + '</select></div>';
+}
+function val(id){ var e = document.getElementById(id); return e ? e.value.trim() : ''; }
+
+/* ---------- SEGMENT ---------- */
+function openSeg(id){
+  var s = id ? segById(id) : null;
+  var isNew = !s;
+  if(isNew){
+    var last = daySegs(activeDayIdx).slice(-1)[0];
+    var st = last ? toMin(last.end) : 9*60;
+    s = { id:uid('seg'), dayIdx:activeDayIdx, start:fromMin(st), end:fromMin(st+60), type:'speaking',
+          title:'', speaker:'', speakerBio:'', intro:'', av:'', locationId:null, personId:null,
+          notes:'', status:'pending', actualStart:null, actualEnd:null, from:'', to:'', mode:'', buffer:0 };
+  }
+
+  var h = '<div class="spread" style="margin-bottom:16px">' +
+    '<h2 style="font-size:1.5rem">' + (isNew ? 'New block' : 'Edit block') + '</h2>' +
+    '<button class="icon-btn" onclick="closeSheet()">✕</button></div>';
+
+  /* Jump straight to the linked place or person without saving first */
+  if(!isNew){
+    var jL = locById(s.locationId), jP = perById(s.personId);
+    if(jL || jP){
+      h += '<div class="linkrow" style="margin:0 0 16px">' +
+        (jL ? '<button class="btn ochre" onclick="navTo(\'' + jL.id + '\')">⌖ Navigate</button>' +
+              '<button class="btn" onclick="openLoc(\'' + jL.id + '\')">Open place</button>' : '') +
+        (jP ? '<button class="btn" onclick="openPerson(\'' + jP.id + '\')">Open ' + esc(jP.name.split(' ').slice(-1)[0]) + '</button>' : '') +
+        '</div>';
+    }
+    if(s.status !== 'done'){
+      h += '<div class="btnrow" style="margin:0 0 16px">' +
+        (s.status === 'active'
+          ? '<button class="btn good" onclick="closeSheet();doneSeg(\'' + s.id + '\')">✓ Complete</button>'
+          : '<button class="btn ochre" onclick="closeSheet();startSeg(\'' + s.id + '\')">▶ Start</button>') +
+        '<button class="btn ghost" onclick="closeSheet();skipSeg(\'' + s.id + '\')">Skip</button></div>';
+    }
+  }
+
+  h += select('Day', 'sg-day', s.dayIdx, ops.days.map(function(d,i){ return { v:i, t:d.label + ' — ' + prettyDate(d.date) }; }));
+  h += '<div class="cols2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+       field('Start', 'sg-start', s.start, '', 'time') + field('End', 'sg-end', s.end, '', 'time') + '</div>';
+  h += select('Type', 'sg-type', s.type, Object.keys(SEG_TYPES).map(function(k){ return { v:k, t:SEG_TYPES[k].label }; }));
+  h += field('Title', 'sg-title', s.title, 'What happens in this block');
+
+  h += '<div class="sec-label">Speaking</div>';
+  h += field('Speaker', 'sg-speaker', s.speaker, 'Who is on the mic');
+  h += area('Speaker bio', 'sg-bio', s.speakerBio, 'One or two lines you can read aloud');
+  h += area('Intro copy', 'sg-intro', s.intro, 'How the director introduces them');
+  h += area('AV / mic notes', 'sg-av', s.av, 'Mic type, recorder, power, restrictions');
+
+  h += '<div class="sec-label">Travel</div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+       field('From', 'sg-from', s.from, 'Origin') + field('To', 'sg-to', s.to, 'Destination') + '</div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+       field('Mode', 'sg-mode', s.mode, 'Van, walk, flight') +
+       field('Buffer (min)', 'sg-buffer', s.buffer, '15', 'number') + '</div>';
+
+  h += '<div class="sec-label">Links</div>';
+  h += select('Location', 'sg-loc', s.locationId || '',
+    [{ v:'', t:'— none —' }].concat(ops.locations.map(function(L){ return { v:L.id, t:L.name }; })));
+  h += select('Narrator (oral history)', 'sg-per', s.personId || '',
+    [{ v:'', t:'— none —' }].concat(ops.people.map(function(p){ return { v:p.id, t:p.name }; })));
+  h += area('Notes', 'sg-notes', s.notes, 'Anything the director needs at a glance');
+
+  h += '<div class="btnrow" style="margin-top:18px">' +
+    '<button class="btn ochre" onclick="saveSeg(\'' + s.id + '\',' + isNew + ')">Save block</button>' +
+    '<button class="btn ghost" onclick="closeSheet()">Cancel</button></div>';
+  if(!isNew){
+    h += '<button class="btn full danger" style="margin-top:10px" onclick="delSeg(\'' + s.id + '\')">Delete block</button>';
+  }
+  if(isNew) ops._draftSeg = s;
+  openSheet(h);
+}
+function saveSeg(id, isNew){
+  var s = isNew ? ops._draftSeg : segById(id);
+  if(!s) return;
+  s.dayIdx     = +val('sg-day');
+  s.start      = val('sg-start') || s.start;
+  s.end        = val('sg-end')   || s.end;
+  if(toMin(s.end) <= toMin(s.start)) s.end = fromMin(toMin(s.start) + 30);
+  s.type       = val('sg-type');
+  s.title      = val('sg-title') || 'Untitled block';
+  s.speaker    = val('sg-speaker');
+  s.speakerBio = val('sg-bio');
+  s.intro      = val('sg-intro');
+  s.av         = val('sg-av');
+  s.from       = val('sg-from');
+  s.to         = val('sg-to');
+  s.mode       = val('sg-mode');
+  s.buffer     = +val('sg-buffer') || 0;
+  s.locationId = val('sg-loc') || null;
+  s.personId   = val('sg-per') || null;
+  s.notes      = val('sg-notes');
+  if(isNew){ ops.segments.push(s); delete ops._draftSeg; logEvent('edit', 'Added block "' + s.title + '"'); }
+  else logEvent('edit', 'Edited block "' + s.title + '"');
+  saveOps(); closeSheet(); render(); toast('Saved');
+}
+function delSeg(id){
+  var s = segById(id); if(!s) return;
+  if(!confirm('Delete "' + s.title + '"?')) return;
+  ops.segments = ops.segments.filter(function(x){ return x.id !== id; });
+  logEvent('edit', 'Deleted block "' + s.title + '"');
+  saveOps(); closeSheet(); render(); toast('Deleted');
+}
+
+/* ---------- PERSON ---------- */
+function openPerson(id){
+  var p = id ? perById(id) : null;
+  var isNew = !p;
+  if(isNew){
+    p = { id:uid('per'), name:'', role:'', org:'', phone:'', email:'', relation:'',
+          consent:{verbal:false,written:false,media:false,archive:false}, stage:'Not started',
+          device:'', files:[], recSec:0, recStartedAt:null, topics:[], notes:'', recordedOn:'' };
+  }
+  var h = '<div class="spread" style="margin-bottom:16px">' +
+    '<h2 style="font-size:1.5rem">' + (isNew ? 'New narrator' : esc(p.name)) + '</h2>' +
+    '<button class="icon-btn" onclick="closeSheet()">✕</button></div>';
+
+  h += field('Name', 'pr-name', p.name, 'Full name as they wish to be credited');
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+       field('Role', 'pr-role', p.role, 'Elder, partner, speaker') +
+       field('Organization', 'pr-org', p.org, '') + '</div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+       field('Phone', 'pr-phone', p.phone, '', 'tel') +
+       field('Email', 'pr-email', p.email, '', 'email') + '</div>';
+  h += area('Relationship to the work', 'pr-rel', p.relation, 'Why this person, and to which site or history');
+  h += select('Interview stage', 'pr-stage', p.stage, INTERVIEW_STAGES);
+  h += field('Topics (comma separated)', 'pr-topics', (p.topics || []).join(', '), 'Land, water, church, labor');
+
+  h += '<div class="sec-label">Recording</div>';
+  h += field('Recording rig', 'pr-device', p.device, 'Zoom H6 + lav, iPhone backup');
+  h += area('Audio / video files', 'pr-files', (p.files || []).join('\n'), 'One filename per line');
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+       field('Logged minutes', 'pr-min', Math.round((p.recSec || 0)/60), '0', 'number') +
+       field('Recorded on', 'pr-date', p.recordedOn, '', 'date') + '</div>';
+  h += area('Field notes', 'pr-notes', p.notes, 'Access needs, preferences, follow-ups');
+
+  if(!isNew){
+    h += '<div class="sec-label">Consent</div><div class="consent">' +
+      ctog(p.id, 'verbal', 'Verbal consent') + ctog(p.id, 'written', 'Written release') +
+      ctog(p.id, 'media', 'Photo / video') + ctog(p.id, 'archive', 'Archive + reuse') + '</div>';
+    h += questionGuide(p, false);
+  }
+
+  h += '<div class="btnrow" style="margin-top:18px">' +
+    '<button class="btn ochre" onclick="savePerson(\'' + p.id + '\',' + isNew + ')">Save</button>' +
+    '<button class="btn ghost" onclick="closeSheet()">Cancel</button></div>';
+  if(!isNew){
+    h += '<button class="btn full danger" style="margin-top:10px" onclick="delPerson(\'' + p.id + '\')">Remove from roster</button>';
+  }
+  if(isNew) ops._draftPer = p;
+  openSheet(h);
+}
+function savePerson(id, isNew){
+  var p = isNew ? ops._draftPer : perById(id);
+  if(!p) return;
+  p.name     = val('pr-name') || 'Unnamed';
+  p.role     = val('pr-role');
+  p.org      = val('pr-org');
+  p.phone    = val('pr-phone');
+  p.email    = val('pr-email');
+  p.relation = val('pr-rel');
+  p.stage    = val('pr-stage');
+  p.topics   = val('pr-topics').split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+  p.device   = val('pr-device');
+  p.files    = val('pr-files').split('\n').map(function(x){ return x.trim(); }).filter(Boolean);
+  p.recSec   = (+val('pr-min') || 0) * 60;
+  p.recordedOn = val('pr-date');
+  p.notes    = val('pr-notes');
+  if(isNew){ ops.people.push(p); delete ops._draftPer; logEvent('edit', 'Added narrator ' + p.name); }
+  saveOps(); closeSheet(); render(); toast('Saved');
+}
+function delPerson(id){
+  var p = perById(id); if(!p) return;
+  if(!confirm('Remove ' + p.name + ' from the roster?')) return;
+  ops.people = ops.people.filter(function(x){ return x.id !== id; });
+  ops.segments.forEach(function(s){ if(s.personId === id) s.personId = null; });
+  saveOps(); closeSheet(); render(); toast('Removed');
+}
+
+/* ---------- LOCATION ---------- */
+function openLoc(id){
+  var L = id ? locById(id) : null;
+  var isNew = !L;
+  if(isNew){
+    L = { id:uid('loc'), name:'', address:'', meetingPoint:'', parking:'', access:'',
+          contact:'', notes:'', lat:null, lng:null, kind:'site' };
+  }
+  var h = '<div class="spread" style="margin-bottom:16px">' +
+    '<h2 style="font-size:1.5rem">' + (isNew ? 'New place' : 'Edit place') + '</h2>' +
+    '<button class="icon-btn" onclick="closeSheet()">✕</button></div>';
+  h += field('Name', 'lc-name', L.name, 'Site or venue name');
+  h += field('Address', 'lc-addr', L.address, 'Street, town, state');
+  h += select('Kind', 'lc-kind', L.kind, ['site','historical','ecological','community','academic','lodging','transit','other']);
+  h += area('Meeting point', 'lc-meet', L.meetingPoint, 'Exactly where the group gathers');
+  h += area('Parking / drop-off', 'lc-park', L.parking, 'Van access, curb notes');
+  h += area('Access notes', 'lc-acc', L.access, 'Terrain, restrooms, accessibility, shade');
+  h += field('On-site contact', 'lc-contact', L.contact, 'Name and phone');
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+       field('Latitude', 'lc-lat', L.lat, 'optional') + field('Longitude', 'lc-lng', L.lng, 'optional') + '</div>';
+  h += area('Notes', 'lc-notes', L.notes, 'Light, sound, permissions, significance');
+  h += '<div class="btnrow" style="margin-top:18px">' +
+    '<button class="btn ochre" onclick="saveLoc(\'' + L.id + '\',' + isNew + ')">Save</button>' +
+    '<button class="btn ghost" onclick="closeSheet()">Cancel</button></div>';
+  if(!isNew) h += '<button class="btn full danger" style="margin-top:10px" onclick="delLoc(\'' + L.id + '\')">Delete place</button>';
+  if(isNew) ops._draftLoc = L;
+  openSheet(h);
+}
+function saveLoc(id, isNew){
+  var L = isNew ? ops._draftLoc : locById(id);
+  if(!L) return;
+  L.name = val('lc-name') || 'Untitled place';
+  L.address = val('lc-addr');
+  L.kind = val('lc-kind');
+  L.meetingPoint = val('lc-meet');
+  L.parking = val('lc-park');
+  L.access = val('lc-acc');
+  L.contact = val('lc-contact');
+  L.lat = parseFloat(val('lc-lat')) || null;
+  L.lng = parseFloat(val('lc-lng')) || null;
+  L.notes = val('lc-notes');
+  if(isNew){ ops.locations.push(L); delete ops._draftLoc; }
+  saveOps(); closeSheet(); render(); toast('Saved');
+}
+function delLoc(id){
+  if(!confirm('Delete this place?')) return;
+  ops.locations = ops.locations.filter(function(x){ return x.id !== id; });
+  ops.segments.forEach(function(s){ if(s.locationId === id) s.locationId = null; });
+  saveOps(); closeSheet(); render(); toast('Deleted');
+}
+
+/* ============================================================
+   MENU · SYNC · EXPORT
+   ============================================================ */
+function openMenu(){
+  var pl = loadPlanner();
+  var schools = (pl && pl.fieldSchools) || [];
+  var h = '<div class="spread" style="margin-bottom:16px">' +
+    '<h2 style="font-size:1.5rem">Field Companion</h2>' +
+    '<button class="icon-btn" onclick="closeSheet()">✕</button></div>';
+
+  h += '<div class="card tight"><div class="xs muted">Loaded field school</div>' +
+    '<div class="seg-title" style="font-size:1.15rem;margin-top:4px">' + esc(ops.schoolTitle) + '</div>' +
+    '<div class="xs muted" style="margin-top:3px">' + esc(ops.destination || '—') + ' · ' +
+    ops.days.length + ' days · ' + ops.segments.length + ' blocks · ' + ops.people.length + ' narrators</div>' +
+    (ops.demo ? '<div class="xs" style="color:var(--ochre-lite);margin-top:6px">Sample data — load a real field school below</div>' : '') +
+    '</div>';
+
+  if(schools.length){
+    h += '<div class="sec-label">Load from the planner</div>';
+    schools.forEach(function(f){
+      h += '<button class="btn full ghost" style="justify-content:flex-start;text-align:left;margin-bottom:8px;' +
+        'height:auto;min-height:56px;padding:12px 14px" onclick="loadSchool(\'' + f.id + '\')">' +
+        '<span style="display:block"><span style="display:block;color:var(--white)">' + esc(f.title) + '</span>' +
+        '<span class="xs muted">' + esc(f.destination || '') + ' · ' + ((f.agenda || []).length) + ' agenda items</span></span></button>';
+    });
+  } else {
+    h += '<div class="sec-label">Planner data</div><div class="card tight sm muted">' +
+      'No planner data found in this browser. Open <b>black-ecologies-lab.html</b> on this device first, ' +
+      'or import a JSON export below.</div>';
+  }
+
+  h += '<div class="sec-label">Days</div>';
+  h += '<div class="row" style="gap:8px">' +
+    '<button class="btn grow" onclick="addDay()">+ Add day</button>' +
+    (ops.days.length > 1 ? '<button class="btn ghost" onclick="removeDay()">− Remove last</button>' : '') + '</div>';
+
+  h += '<div class="sec-label">Data</div>';
+  h += '<button class="btn full" style="margin-bottom:8px" onclick="exportOps()">↓ Export field data (JSON)</button>';
+  h += '<button class="btn full" style="margin-bottom:8px" onclick="document.getElementById(\'importer\').click()">↑ Import field data</button>';
+  h += '<input type="file" id="importer" accept="application/json,.json" style="display:none" onchange="importOps(this)">';
+  h += '<button class="btn full ghost" style="margin-bottom:8px" onclick="exportDaySheet()">⎙ Print / PDF day sheet</button>';
+  h += '<button class="btn full danger" onclick="resetOps()">Reset field data</button>';
+
+  var ins = installState();
+  h += '<div class="sec-label">Install</div>';
+  h += '<div class="card tight"><div class="row" style="gap:10px;align-items:flex-start">' +
+    '<span style="font-size:1.2rem;line-height:1.2">' +
+      (ins.code === 'installed' ? '✓' : (ins.code === 'file' ? '⚠' : '↓')) + '</span>' +
+    '<span class="grow sm ' + (ins.code === 'file' ? '' : 'dim') + '" ' +
+      (ins.code === 'file' ? 'style="color:#e0a077"' : '') + '>' + esc(ins.text) + '</span></div></div>';
+  if(ins.code === 'ready'){
+    h += '<button class="btn full ochre" id="install-btn" onclick="doInstall()">Install as an app</button>';
+  }
+
+  h += '<div class="xs muted" style="margin-top:20px;line-height:1.6">' +
+    'Everything is stored on this device only. Nothing is uploaded, and the app works with no signal. ' +
+    'Export before wiping the browser or switching iPads.</div>';
+
+  openSheet(h);
+}
+
+function loadSchool(fsId){
+  var pl = loadPlanner();
+  if(!pl) return;
+  var fs = pl.fieldSchools.find(function(f){ return f.id === fsId; });
+  if(!fs) return;
+  if(!confirm('Load "' + fs.title + '"? This replaces the current field data on this device. Export first if you need it.')) return;
+  ops = importFromPlanner(fs, pl.contacts || []);
+  activeDayIdx = Math.max(0, ops.days.findIndex(function(d){ return d.date === todayISO(); }));
+  saveOps();
+  document.getElementById('fs-name').textContent = ops.schoolTitle;
+  document.getElementById('fs-sub').textContent  = ops.destination || 'Black Ecologies Lab';
+  closeSheet(); go('now'); toast('Loaded ' + fs.title);
+}
+
+function addDay(){
+  var last = ops.days[ops.days.length - 1];
+  ops.days.push({ date: addDays(last.date, 1), label: 'Day ' + (ops.days.length + 1) });
+  saveOps(); closeSheet(); render(); toast('Day added');
+}
+function removeDay(){
+  if(ops.days.length < 2) return;
+  var i = ops.days.length - 1;
+  if(ops.segments.some(function(s){ return s.dayIdx === i; })){
+    if(!confirm('That day still has blocks. Remove it and its blocks?')) return;
+    ops.segments = ops.segments.filter(function(s){ return s.dayIdx !== i; });
+  }
+  ops.days.pop();
+  if(activeDayIdx >= ops.days.length) activeDayIdx = ops.days.length - 1;
+  saveOps(); closeSheet(); render(); toast('Day removed');
+}
+
+function exportOps(){
+  var blob = new Blob([JSON.stringify(ops, null, 2)], { type:'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'BEL-field-' + (ops.schoolTitle || 'school').replace(/[^a-z0-9]+/gi,'-').toLowerCase().slice(0,40) +
+    '-' + todayISO() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1500);
+  toast('Exported');
+}
+function importOps(input){
+  var f = input.files && input.files[0];
+  if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    try{
+      var d = JSON.parse(r.result);
+      if(!d.segments || !d.days) throw new Error('not a field file');
+      if(!confirm('Replace current field data with this file?')) return;
+      ops = d;
+      activeDayIdx = 0;
+      saveOps();
+      document.getElementById('fs-name').textContent = ops.schoolTitle;
+      document.getElementById('fs-sub').textContent  = ops.destination || 'Black Ecologies Lab';
+      closeSheet(); go('now'); toast('Imported');
+    }catch(e){ toast('That file was not a field export'); }
+  };
+  r.readAsText(f);
+  input.value = '';
+}
+function resetOps(){
+  if(!confirm('Wipe all field data on this device? Export first if you need a copy.')) return;
+  localStorage.removeItem(OPS_KEY);
+  location.reload();
+}
+
+/* Printable one-page day sheet — for the paper backup every field lead ends up wanting */
+function exportDaySheet(){
+  var d = ops.days[activeDayIdx];
+  var segs = daySegs(activeDayIdx);
+  var w = window.open('', '_blank');
+  if(!w){ toast('Allow pop-ups to print the day sheet'); return; }
+  var rows = segs.map(function(s){
+    var loc = locById(s.locationId), per = perById(s.personId);
+    var detail = [
+      s.speaker ? 'Speaker: ' + s.speaker : '',
+      per ? 'Narrator: ' + per.name : '',
+      loc ? 'At: ' + loc.name + (loc.meetingPoint ? ' (' + loc.meetingPoint + ')' : '') : '',
+      s.type === 'travel' && s.to ? s.from + ' → ' + s.to + (s.mode ? ' · ' + s.mode : '') : '',
+      s.av ? 'AV: ' + s.av : '',
+      s.notes || ''
+    ].filter(Boolean).join('<br>');
+    return '<tr><td class="t">' + fmt12(s.start) + '<br><span class="g">' + fmt12(s.end) + '</span></td>' +
+      '<td><b>' + esc(s.title) + '</b> <span class="g">[' + SEG_TYPES[s.type].label + ']</span>' +
+      (detail ? '<div class="g">' + detail + '</div>' : '') + '</td>' +
+      '<td class="box"></td></tr>';
+  }).join('');
+  var pending = ops.people.filter(function(p){ return !p.consent.written; });
+
+  /* Question sheets for anyone being interviewed today — the paper backup
+     that matters most, because this is what you read from if the iPad dies. */
+  var todaysPeople = [];
+  segs.forEach(function(s){
+    if(s.personId && todaysPeople.indexOf(s.personId) < 0) todaysPeople.push(s.personId);
+  });
+  var qBlocks = todaysPeople.map(function(pid){
+    var p = perById(pid);
+    if(!p || !p.questions || !p.questions.length) return '';
+    return '<h3>Questions — ' + esc(p.name) + '</h3>' +
+      (p.focus ? '<div class="g" style="margin-bottom:6px">Focus: ' + esc(p.focus) + '</div>' : '') +
+      '<ol style="margin:0;padding-left:20px">' + p.questions.map(function(q){
+        return '<li style="margin-bottom:9px"><b>' + esc(q.label) + '</b><br>' + esc(q.text) +
+          (q.sub && q.sub.length ? '<ul style="margin:5px 0 0;padding-left:16px;color:#555">' +
+            q.sub.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '') +
+          '</li>';
+      }).join('') + '</ol>';
+  }).filter(Boolean).join('');
+  w.document.write(
+    '<!doctype html><meta charset="utf-8"><title>' + esc(ops.schoolTitle) + ' — ' + esc(d.label) + '</title>' +
+    '<style>body{font:12px/1.45 Georgia,serif;color:#111;margin:28px;}h1{font-size:18px;margin:0 0 2px}' +
+    'h2{font-size:12px;font-weight:normal;color:#555;margin:0 0 16px;letter-spacing:.06em;text-transform:uppercase}' +
+    'table{width:100%;border-collapse:collapse}td{border-top:1px solid #ccc;padding:8px 6px;vertical-align:top}' +
+    '.t{width:74px;font-weight:bold;white-space:nowrap}.g{color:#666;font-size:11px}' +
+    '.box{width:26px;border-left:1px solid #eee}.box:after{content:"";display:block;width:14px;height:14px;border:1px solid #666}' +
+    'h3{font-size:12px;margin:22px 0 6px;letter-spacing:.06em;text-transform:uppercase;color:#555}' +
+    'ul{margin:0;padding-left:18px;color:#333}</style>' +
+    '<h1>' + esc(ops.schoolTitle) + '</h1>' +
+    '<h2>' + esc(d.label) + ' · ' + prettyDate(d.date) + ' · ' + esc(ops.destination) + '</h2>' +
+    '<table>' + rows + '</table>' +
+    (pending.length ? '<h3>Releases still needed</h3><ul>' +
+      pending.map(function(p){ return '<li>' + esc(p.name) + (p.recSec ? ' — ' + clockStr(p.recSec) + ' already recorded' : '') + '</li>'; }).join('') +
+      '</ul>' : '') +
+    qBlocks +
+    '<h3>Notes</h3><div style="height:120px;border:1px solid #ddd"></div>'
+  );
+  w.document.close();
+  setTimeout(function(){ w.print(); }, 350);
+}
+
+/* ============================================================
+   GESTURES: swipe between the five views
+   ============================================================ */
+(function(){
+  var order = ['now','day','show','oral','place'];
+  var x0 = null, y0 = null;
+  var main = null;
+  document.addEventListener('touchstart', function(e){
+    if(document.getElementById('sheet').classList.contains('open')) return;
+    if(e.touches.length !== 1) return;
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+  }, { passive:true });
+  document.addEventListener('touchend', function(e){
+    if(x0 == null) return;
+    var t = e.changedTouches[0];
+    var dx = t.clientX - x0, dy = t.clientY - y0;
+    x0 = null;
+    if(Math.abs(dx) < 70 || Math.abs(dy) > 55) return;
+    var i = order.indexOf(view);
+    var ni = dx < 0 ? Math.min(order.length - 1, i + 1) : Math.max(0, i - 1);
+    if(ni !== i){ haptic(); go(order[ni]); }
+  }, { passive:true });
+})();
+
+/* Keep the screen awake during a field day, where supported */
+(function(){
+  var lock = null;
+  async function acquire(){
+    try{
+      if('wakeLock' in navigator && document.visibilityState === 'visible'){
+        lock = await navigator.wakeLock.request('screen');
+      }
+    }catch(e){ /* unsupported or denied — not important */ }
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible'){ acquire(); render(); }
+  });
+  acquire();
+})();
+
+/* ============================================================
+   INSTALL / OFFLINE
+   ------------------------------------------------------------
+   The service worker only registers over http(s). Opened as a
+   local file the app still runs — it just can't install, so we
+   say so plainly rather than failing silently.
+   ============================================================ */
+var deferredInstall = null;
+var isStandalone = (function(){
+  try{
+    if(window.navigator.standalone === true) return true;
+    return !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  }catch(e){ return false; }
+})();
+
+if('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(e){
+      console.warn('SW registration failed', e);
+    });
+  });
+}
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredInstall = e;
+  var b = document.getElementById('install-btn');
+  if(b) b.style.display = '';
+});
+
+function installState(){
+  if(isStandalone) return { code:'installed', text:'Installed — running as an app' };
+  if(location.protocol === 'file:') return { code:'file',
+    text:'Opened as a local file. iOS can’t add this to the Home Screen and Safari may clear its data. Publish it to a URL first — see the deploy guide.' };
+  if(deferredInstall) return { code:'ready', text:'Ready to install' };
+  if(/iPad|iPhone|iPod/.test(navigator.userAgent)) return { code:'ios',
+    text:'Tap the Share button in Safari, then “Add to Home Screen”.' };
+  return { code:'browser', text:'Open this page in Safari or Chrome to install it as an app.' };
+}
+function doInstall(){
+  if(deferredInstall){
+    deferredInstall.prompt();
+    deferredInstall.userChoice.then(function(){ deferredInstall = null; closeSheet(); });
+  } else {
+    toast(installState().text);
+  }
+}
+
+/* ---------- START ---------- */
+try{
+  boot();
+  updateRecTimer();
+}catch(err){
+  document.getElementById('main').innerHTML =
+    '<div class="empty"><div class="big">⚠</div><div>Something went wrong loading field data.</div>' +
+    '<div class="xs muted" style="margin-top:10px">' + esc(err && err.message) + '</div>' +
+    '<button class="btn danger" style="margin-top:16px" onclick="localStorage.removeItem(\'' + OPS_KEY + '\');location.reload()">Reset and reload</button></div>';
+  console.error(err);
+}
+
+</script>
+</body>
+</html>
