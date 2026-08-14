@@ -1,7 +1,7 @@
 /* Black Ecologies Field Companion — offline cache.
    The app is a single self-contained file, so the cache is tiny.
    Bump CACHE when you publish a new version of index.html. */
-const CACHE = 'bel-field-v1';
+const CACHE = 'bel-field-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
