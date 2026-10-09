@@ -11,6 +11,7 @@
 <title>BEL Field Companion</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <style>
 :root{
   --charcoal:#161A0E; --panel-bg:#22261A; --panel-mid:#2D3121; --panel-lite:#3A3D25;
@@ -394,6 +395,7 @@ a.link{color:var(--ochre-lite);text-decoration:none;border-bottom:1px solid rgba
 .phrkey{display:flex;gap:12px;flex-wrap:wrap;font-size:.68rem;color:var(--cream-muted);margin:4px 0 10px}
 .phrkey i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 
+#topbar .belmark{width:38px;height:38px;flex:0 0 auto;margin-right:-2px}
 @media print{#tabbar,#topbar{display:none;}body{background:#fff;color:#000;}}
 /* required styles */
 
@@ -1089,7 +1091,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 <div id="app">
   <header id="topbar">
     <button class="icon-btn" onclick="openMenu()" aria-label="Menu">☰</button>
-    <div class="brand"><span id="fs-name">Field Companion</span><small id="fs-sub">Black Ecologies Lab</small></div>
+    <svg class="belmark" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="38" height="38"><defs><clipPath id="belring"><circle cx="256" cy="256" r="192"/></clipPath></defs><g clip-path="url(#belring)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M40 372 C 110 350, 170 394, 256 372 S 400 350, 472 372" stroke="#BC7710" stroke-width="11"/><path d="M40 408 C 120 388, 180 428, 262 408 S 404 388, 472 408" stroke="#BC7710" stroke-width="9" opacity=".8"/><path d="M40 442 C 120 424, 190 460, 268 442 S 408 424, 472 442" stroke="#BC7710" stroke-width="7" opacity=".6"/><path d="M256 352 C 250 310, 266 282, 258 236" stroke="#BDAA72" stroke-width="16"/><path d="M258 250 C 228 222, 196 214, 160 176 C 140 154, 132 128, 136 108" stroke="#BDAA72" stroke-width="12"/><path d="M258 236 C 262 196, 248 150, 262 76" stroke="#BDAA72" stroke-width="12"/><path d="M262 262 C 300 236, 336 230, 366 196 C 386 174, 392 150, 388 126" stroke="#BDAA72" stroke-width="12"/><path d="M190 205 C 170 208, 140 212, 104 236" stroke="#BDAA72" stroke-width="9"/><path d="M340 222 C 366 228, 396 236, 420 262" stroke="#BDAA72" stroke-width="9"/><path d="M256 150 C 232 136, 218 118, 210 92" stroke="#BDAA72" stroke-width="8"/><path d="M256 346 C 230 370, 196 380, 150 404" stroke="#BDAA72" stroke-width="10"/><path d="M256 346 C 248 382, 236 412, 222 452" stroke="#BDAA72" stroke-width="9"/><path d="M258 346 C 270 384, 288 414, 304 452" stroke="#BDAA72" stroke-width="9"/><path d="M258 344 C 290 368, 326 378, 370 400" stroke="#BDAA72" stroke-width="10"/></g><circle cx="256" cy="256" r="196" fill="none" stroke="#BDAA72" stroke-width="14"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#C12A0A" transform="translate(156 124) rotate(-28) scale(1.1)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#7D8740" transform="translate(212 92) rotate(-34) scale(1.0)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#BC7710" transform="translate(290 94) rotate(18) scale(1.1)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#C12A0A" transform="translate(364 128) rotate(30) scale(1.05)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#BC7710" transform="translate(118 222) rotate(-70) scale(0.95)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#7D8740" transform="translate(170 150) rotate(40) scale(0.8)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#7D8740" transform="translate(340 160) rotate(-40) scale(0.85)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#BC7710" transform="translate(400 248) rotate(66) scale(0.95)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#BDAA72" transform="translate(312 160) rotate(-20) scale(0.75)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#C12A0A" transform="translate(206 182) rotate(52) scale(0.7)"/><path d="M0 -24 C 13 -11, 13 11, 0 24 C -13 11, -13 -11, 0 -24 Z" fill="#7D8740" transform="translate(322 214) rotate(-58) scale(0.7)"/></svg><div class="brand"><span id="fs-name">Field Companion</span><small id="fs-sub">Black Ecologies Lab</small></div>
     <div id="clock">--:--</div>
   </header>
   <main id="main"></main>
